@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>flydubai — Book flights from Dubai | Demo</title>
+<meta name="description" content="Demo booking site used for a Dynamics 365 Customer Insights – Journeys web tracking demonstration.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- ===== Dynamics 365 Customer Insights – Journeys web tracking ===== -->
+<script>
+    (function (a, t, i) { var e = "MSCI"; var s = "Analytics"; var o = e + "queue"; a[o] = a[o] || []; var r = a[e] || function (n) { var t = {}; t[s] = {}; function e(e) { while (e.length) { var r = e.pop(); t[s][r] = function (e) { return function () { a[o].push([e, n, arguments]) } }(r) } } var r = "track"; var i = "set"; e([r + "Event", r + "View", r + "Action", i + "Config", i + "Property", i + "User", "initialize", "teardown"]); return t }(i.name); var n = i.name; if (!a[e]) { a[n] = r[s]; a[o].push(["new", n]); setTimeout(function () { var e = "script"; var r = t.createElement(e); r.async = 1; r.src = i.src; var n = t.getElementsByTagName(e)[0]; n.parentNode.insertBefore(r, n) }, 1) } else { a[n] = new r[s] } if (i.user) { a[n].setUser(i.user) } if (i.props) { for (var c in i.props) { a[n].setProperty(c, i.props[c]) } } a[n].initialize(i.cfg) })(window, document, {
+
+        src: "https://rdrect-eur1.mkt.dynamics.com/webtracking/WebTracking/WebTracking.bundle.js",
+        name: "MSCI",
+        cfg: {
+
+            ingestionKey: "n/OuH+wZ9Gr/L7dvSuQTAe8gu5Y6iccYkPSvR3pltgo=",
+            endpointUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/2e20ea40-bb60-f011-8ee3-000d3aa9bf7e/notifierpublic/webtracking/events",
+            allowIpAddressCollection: false,
+            queryStringAttributes: ["from","to","depart","ret","cabin","pax","trip"],
+            autoCapture: {
+                view: true,
+                click: true
+            },
+            orgInfo: {
+                orgId: "2e20ea40-bb60-f011-8ee3-000d3aa9bf7e",
+                orgTenantId: "5160aab0-e6f5-4c4a-b800-6d5280cd34e5",
+                orgGeo: "EUR"
+            }
+        }
+      });
+</script>
+<!-- ===== end web tracking ===== -->
+
+<style>
+:root{
+  --navy:#002B5C;
+  --navy-dk:#001B3C;
+  --orange:#F58220;
+  --orange-dk:#D96D0D;
+  --gold:#C8A96A;
+  --ink:#1D2433;
+  --muted:#5A6477;
+  --line:#E3E8F0;
+  --bg:#F4F6FA;
+  --radius:10px;
+  --shadow:0 4px 20px rgba(0,43,92,.10);
+  --shadow-lg:0 10px 40px rgba(0,43,92,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:#fff;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* demo banner */
+.demobar{background:#111A2E;color:#9FB2D0;font-size:12px;letter-spacing:.3px;padding:7px 0;text-align:center}
+.demobar strong{color:#fff}
+
+/* ===== header ===== */
+header{background:var(--navy);color:#fff;position:sticky;top:0;z-index:60;box-shadow:0 2px 14px rgba(0,0,0,.18)}
+.topbar{display:flex;align-items:center;justify-content:space-between;height:68px}
+.brand{display:flex;align-items:baseline;gap:2px;font-weight:700;font-size:26px;letter-spacing:-.5px}
+.brand .fly{color:#fff}
+.brand .dubai{color:var(--orange)}
+.brand small{display:block;font-size:9px;letter-spacing:2.6px;color:#8FA6C6;font-weight:600;margin-top:-4px}
+nav.main{display:flex;gap:26px;font-size:14px;font-weight:600}
+nav.main a{padding:8px 0;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap}
+nav.main a:hover,nav.main a.on{border-color:var(--orange);color:#fff}
+.util{display:flex;align-items:center;gap:16px;font-size:13px}
+.util .lang{display:flex;align-items:center;gap:6px;cursor:pointer;color:#C7D6EA}
+.util .lang:hover{color:#fff}
+.btn-login{background:transparent;border:1.5px solid rgba(255,255,255,.45);color:#fff;padding:8px 18px;border-radius:40px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.btn-login:hover{background:#fff;color:var(--navy);border-color:#fff}
+.burger{display:none;background:none;border:0;color:#fff;font-size:24px;cursor:pointer}
+
+/* ===== hero ===== */
+.hero{position:relative;min-height:560px;display:flex;align-items:flex-start;padding-top:56px;
+  background:linear-gradient(118deg,#001B3C 0%,#002B5C 42%,#0A4682 72%,#1565A8 100%);overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 70% at 78% 18%,rgba(245,130,32,.30),transparent 62%),
+             radial-gradient(ellipse 50% 60% at 12% 82%,rgba(21,101,168,.55),transparent 65%)}
+.hero::after{content:"";position:absolute;right:-60px;bottom:-40px;width:620px;height:360px;opacity:.14;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 340'><path d='M70 300 L70 120 L130 120 L170 220 L250 220 L205 90 L265 90 L380 215 L500 205 Q560 200 560 225 Q560 250 500 248 L360 252 L250 300 Z' fill='white'/></svg>") no-repeat center/contain}
+.hero-inner{position:relative;z-index:2;width:100%}
+.hero h1{font-size:40px;line-height:1.15;font-weight:700;color:#fff;max-width:620px;letter-spacing:-.6px}
+.hero h1 span{color:var(--orange)}
+.hero p.sub{color:#CBDBEF;font-size:16px;margin-top:12px;max-width:560px}
+
+/* ===== search widget ===== */
+.searchcard{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-lg);margin-top:30px;overflow:hidden}
+.triptabs{display:flex;border-bottom:1px solid var(--line);background:#FAFBFD}
+.triptab{padding:15px 26px;font-size:14px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:.15s;user-select:none}
+.triptab:hover{color:var(--navy)}
+.triptab.on{color:var(--navy);border-color:var(--orange);background:#fff}
+.searchbody{padding:24px}
+.fieldrow{display:grid;grid-template-columns:1.25fr 1.25fr 1fr 1fr .95fr auto;gap:12px;align-items:end}
+.field{position:relative}
+.field label{display:block;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.field .ctl{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:11px 13px;font-size:15px;font-family:inherit;color:var(--ink);background:#fff;transition:.15s;height:48px}
+.field .ctl:focus{outline:0;border-color:var(--navy);box-shadow:0 0 0 3px rgba(0,43,92,.10)}
+.field .ctl:disabled{background:#F4F6FA;color:#9AA4B6;cursor:not-allowed}
+.airport{display:flex;flex-direction:column;justify-content:center;cursor:pointer}
+.airport .code{font-size:22px;font-weight:700;color:var(--navy);line-height:1.1}
+.airport .city{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.swap{position:absolute;right:-19px;top:28px;z-index:5;width:32px;height:32px;border-radius:50%;background:#fff;border:1.5px solid var(--line);color:var(--navy);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 6px rgba(0,43,92,.12);transition:.15s}
+.swap:hover{background:var(--navy);color:#fff;border-color:var(--navy);transform:rotate(180deg)}
+.btn-search{background:var(--orange);color:#fff;border:0;border-radius:8px;height:48px;padding:0 34px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap;box-shadow:0 3px 10px rgba(245,130,32,.35)}
+.btn-search:hover{background:var(--orange-dk);box-shadow:0 5px 16px rgba(245,130,32,.45)}
+.searchfoot{display:flex;gap:26px;align-items:center;margin-top:16px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.searchfoot label{display:flex;align-items:center;gap:7px;cursor:pointer}
+.searchfoot input{accent-color:var(--navy);width:15px;height:15px}
+
+/* ===== results ===== */
+.results{display:none;background:var(--bg);padding:34px 0 56px;border-top:1px solid var(--line)}
+.results.show{display:block}
+.resbar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.resbar h2{font-size:22px;color:var(--navy);font-weight:700}
+.resbar .meta{font-size:13px;color:var(--muted);margin-top:3px}
+.pill{background:#E8F0FA;color:var(--navy);border-radius:40px;padding:6px 15px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.datestrip{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:20px}
+.dcell{background:#fff;border:1.5px solid var(--line);border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;transition:.15s}
+.dcell:hover{border-color:var(--navy)}
+.dcell.on{border-color:var(--orange);background:#FFF6ED;box-shadow:0 2px 8px rgba(245,130,32,.18)}
+.dcell .dd{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.dcell .dp{font-size:15px;font-weight:700;color:var(--navy);margin-top:3px}
+.dcell .df{font-size:12px;color:var(--orange);font-weight:700;margin-top:2px}
+
+.flight{background:#fff;border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;transition:.18s}
+.flight:hover{box-shadow:var(--shadow);border-color:#C9D6E8}
+.ftop{display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:0;align-items:stretch}
+.fleg{padding:20px 22px;display:flex;align-items:center;gap:20px}
+.ftime{text-align:center;min-width:72px}
+.ftime .t{font-size:22px;font-weight:700;color:var(--navy);line-height:1.1}
+.ftime .a{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.fpath{flex:1;text-align:center;position:relative;padding:0 4px}
+.fpath .dur{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:5px}
+.fline{height:2px;background:var(--line);position:relative}
+.fline::before,.fline::after{content:"";position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;background:var(--navy)}
+.fline::before{left:0}
+.fline::after{right:0}
+.fplane{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--bg);padding:0 6px;color:var(--orange);font-size:14px}
+.fpath .stop{font-size:11px;color:#1B8A4B;font-weight:700;margin-top:5px}
+.fno{font-size:11px;color:var(--muted);margin-top:6px}
+.fare{padding:20px 18px;border-left:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;cursor:pointer;transition:.15s;position:relative}
+.fare:hover{background:#FAFBFD}
+.fare.sel{background:#FFF6ED;box-shadow:inset 0 0 0 2px var(--orange)}
+.fare .cls{font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.fare .amt{font-size:21px;font-weight:700;color:var(--navy);margin:5px 0 1px}
+.fare .amt .cur{font-size:12px;color:var(--muted);font-weight:600;margin-right:3px}
+.fare .note{font-size:11px;color:#1B8A4B;font-weight:600}
+.fare .seats{font-size:11px;color:#C0392B;font-weight:600;margin-top:3px}
+.fbottom{background:#FAFBFD;border-top:1px solid var(--line);padding:11px 22px;display:flex;gap:20px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.fbottom span{display:flex;align-items:center;gap:5px}
+
+.cta-strip{background:var(--navy);color:#fff;border-radius:var(--radius);padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:22px}
+.cta-strip h3{font-size:17px;font-weight:700}
+.cta-strip p{font-size:13px;color:#BFD2E9;margin-top:3px}
+.btn-ghost{background:var(--orange);color:#fff;border:0;border-radius:40px;padding:11px 26px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-ghost:hover{background:var(--orange-dk)}
+
+/* ===== sections ===== */
+section.block{padding:58px 0}
+.sechead{text-align:center;margin-bottom:34px}
+.sechead h2{font-size:28px;color:var(--navy);font-weight:700;letter-spacing:-.4px}
+.sechead p{color:var(--muted);font-size:15px;margin-top:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.dest{border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);background:#fff;cursor:pointer;transition:.2s}
+.dest:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.dest .img{height:170px;position:relative;display:flex;align-items:flex-end;padding:16px;color:#fff}
+.dest .img::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 35%,rgba(0,27,60,.80))}
+.dest .img h3{position:relative;z-index:2;font-size:19px;font-weight:700}
+.dest .img .ctry{position:relative;z-index:2;font-size:12px;color:#CBDBEF;display:block;margin-top:1px}
+.dest .body{padding:15px 16px 18px}
+.dest .body .from{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+.dest .body .pr{font-size:21px;font-weight:700;color:var(--navy);margin-top:2px}
+.dest .body .pr .cur{font-size:12px;color:var(--muted);font-weight:600}
+.dest .body .tag{font-size:12px;color:var(--orange);font-weight:600;margin-top:6px}
+
+.feat{text-align:center;padding:26px 18px;border-radius:var(--radius);background:#fff;border:1px solid var(--line);transition:.18s}
+.feat:hover{box-shadow:var(--shadow);border-color:#C9D6E8}
+.feat .ico{width:52px;height:52px;border-radius:50%;background:#FFF2E5;color:var(--orange);display:flex;align-items:center;justify-content:center;font-size:23px;margin:0 auto 14px}
+.feat h4{font-size:15px;color:var(--navy);font-weight:700}
+.feat p{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.6}
+
+.skyband{background:linear-gradient(115deg,#001B3C,#002B5C 55%,#0A4682);color:#fff;border-radius:var(--radius);padding:40px;display:grid;grid-template-columns:1.25fr 1fr;gap:38px;align-items:center}
+.skyband .kick{font-size:11px;letter-spacing:2.4px;text-transform:uppercase;color:var(--gold);font-weight:700}
+.skyband h2{font-size:28px;font-weight:700;margin:10px 0 12px;letter-spacing:-.4px}
+.skyband p{color:#C5D6EC;font-size:14.5px;line-height:1.7}
+.tierbox{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:var(--radius);padding:22px}
+.tierrow{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.12);font-size:14px}
+.tierrow:last-child{border:0}
+.tierrow .nm{font-weight:600}
+.tierrow .vl{color:var(--gold);font-weight:700}
+
+/* ===== footer ===== */
+footer{background:var(--navy-dk);color:#A9BDD8;padding:46px 0 26px;font-size:13px;margin-top:10px}
+.fgrid{display:grid;grid-template-columns:1.5fr repeat(4,1fr);gap:32px;padding-bottom:30px;border-bottom:1px solid rgba(255,255,255,.12)}
+.fgrid h5{color:#fff;font-size:13px;font-weight:700;margin-bottom:13px;letter-spacing:.3px}
+.fgrid ul{list-style:none}
+.fgrid li{margin-bottom:8px}
+.fgrid a:hover{color:var(--orange)}
+.fbrand p{margin-top:12px;line-height:1.7;max-width:270px;color:#8FA6C6}
+.fbot{padding-top:20px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:#7C92B2;font-size:12px}
+
+/* toast */
+.toast{position:fixed;right:22px;bottom:22px;background:var(--navy);color:#fff;padding:14px 20px;border-radius:8px;box-shadow:var(--shadow-lg);font-size:13.5px;z-index:200;display:flex;align-items:center;gap:11px;opacity:0;transform:translateY(14px);transition:.25s;pointer-events:none;max-width:340px}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast .dot{width:9px;height:9px;border-radius:50%;background:var(--orange);flex-shrink:0}
+
+@media(max-width:1000px){
+  .fieldrow{grid-template-columns:1fr 1fr;gap:14px}
+  .btn-search{grid-column:1/-1}
+  .swap{display:none}
+  .ftop{grid-template-columns:1fr}
+  .fare{border-left:0;border-top:1px solid var(--line);flex-direction:row;justify-content:space-between;padding:14px 22px}
+  .fare .amt{margin:0}
+  .grid3,.grid4{grid-template-columns:1fr 1fr}
+  .skyband{grid-template-columns:1fr;padding:28px}
+  .fgrid{grid-template-columns:1fr 1fr}
+  nav.main,.util .lang{display:none}
+  .datestrip{grid-template-columns:repeat(4,1fr)}
+  .hero h1{font-size:30px}
+}
+@media(max-width:620px){
+  .grid3,.grid4,.fgrid{grid-template-columns:1fr}
+  .fieldrow{grid-template-columns:1fr}
+  .datestrip{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="demobar">
+  <strong>DEMO ENVIRONMENT</strong> &nbsp;·&nbsp; Illustrative booking site built for a Dynamics 365 Customer Insights – Journeys web-tracking demonstration. Not affiliated with any airline. No real bookings.
+</div>
+
+<header>
+  <div class="wrap topbar">
+    <a href="#" class="brand" aria-label="flydubai demo home">
+      <div>
+        <div><span class="fly">fly</span><span class="dubai">dubai</span></div>
+        <small>DEMO</small>
+      </div>
+    </a>
+    <nav class="main">
+      <a href="#" class="on">Book</a>
+      <a href="#manage">Manage</a>
+      <a href="#checkin">Check-in</a>
+      <a href="#destinations">Destinations</a>
+      <a href="#experience">Experience</a>
+      <a href="#skywards">Skywards</a>
+    </nav>
+    <div class="util">
+      <span class="lang">🌐 EN &nbsp;|&nbsp; AED</span>
+      <button class="btn-login" onclick="track('Login_Click','header')">Sign in</button>
+    </div>
+    <button class="burger" aria-label="Menu">☰</button>
+  </div>
+</header>
+
+<!-- ============ HERO + SEARCH ============ -->
+<div class="hero">
+  <div class="wrap hero-inner">
+    <h1>Dubai to London, <span>non-stop daily.</span></h1>
+    <p class="sub">Search live fares across 125+ destinations. Business Class lie-flat seats, 2× Skywards miles this month.</p>
+
+    <div class="searchcard">
+      <div class="triptabs">
+        <div class="triptab on" data-trip="return" onclick="setTrip(this)">Return</div>
+        <div class="triptab" data-trip="oneway" onclick="setTrip(this)">One way</div>
+        <div class="triptab" data-trip="multi" onclick="setTrip(this)">Multi-city</div>
+      </div>
+      <div class="searchbody">
+        <form id="searchForm" onsubmit="return doSearch(event)">
+          <div class="fieldrow">
+            <div class="field">
+              <label for="origin">From</label>
+              <select id="origin" class="ctl">
+                <option value="DXB" selected>DXB — Dubai International</option>
+                <option value="SHJ">SHJ — Sharjah</option>
+                <option value="AUH">AUH — Abu Dhabi</option>
+              </select>
+              <button type="button" class="swap" title="Swap" onclick="swapPorts()">⇄</button>
+            </div>
+            <div class="field">
+              <label for="dest">To</label>
+              <select id="dest" class="ctl">
+                <option value="LGW" selected>LGW — London Gatwick</option>
+                <option value="IST">IST — Istanbul</option>
+                <option value="PRG">PRG — Prague</option>
+                <option value="TBS">TBS — Tbilisi</option>
+                <option value="ZNZ">ZNZ — Zanzibar</option>
+                <option value="COK">COK — Kochi</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="dep">Departing</label>
+              <input type="date" id="dep" class="ctl">
+            </div>
+            <div class="field">
+              <label for="ret">Returning</label>
+              <input type="date" id="ret" class="ctl">
+            </div>
+            <div class="field">
+              <label for="pax">Passengers &amp; class</label>
+              <select id="pax" class="ctl">
+                <option value="1-economy" selected>1 Adult, Economy</option>
+                <option value="2-economy">2 Adults, Economy</option>
+                <option value="1-business">1 Adult, Business</option>
+                <option value="2-business">2 Adults, Business</option>
+              </select>
+            </div>
+            <div class="field">
+              <button type="submit" class="btn-search">Search flights</button>
+            </div>
+          </div>
+          <div class="searchfoot">
+            <label><input type="checkbox" id="flexi" checked> Flexible dates (±3 days)</label>
+            <label><input type="checkbox" id="miles"> Pay with Skywards miles</label>
+            <label><input type="checkbox" id="direct" checked> Non-stop only</label>
+            <span>✈ Dubai → London operates up to 2× daily</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RESULTS ============ -->
+<div class="results" id="results">
+  <div class="wrap">
+    <div class="resbar">
+      <div>
+        <h2 id="resTitle">Dubai (DXB) → London Gatwick (LGW)</h2>
+        <div class="meta" id="resMeta">—</div>
+      </div>
+      <div class="pill">✓ Fares include taxes &amp; carrier charges</div>
+    </div>
+
+    <div class="datestrip" id="dateStrip"></div>
+    <div id="flightList"></div>
+
+    <div class="cta-strip">
+      <div>
+        <h3>Not ready to book?</h3>
+        <p>Save this search and we'll alert you if the Dubai–London fare drops.</p>
+      </div>
+      <button class="btn-ghost" onclick="track('SaveSearch_Click','results');toast('Search saved — we\'ll email you if the fare drops.')">Save this search</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DESTINATIONS ============ -->
+<section class="block" id="destinations">
+  <div class="wrap">
+    <div class="sechead">
+      <h2>Popular from Dubai</h2>
+      <p>Return fares including taxes. Fares shown are illustrative for this demo.</p>
+    </div>
+    <div class="grid3">
+      <div class="dest" onclick="quickSearch('LGW','London')">
+        <div class="img" style="background:linear-gradient(135deg,#2C3E6B,#54688F)">
+          <div><h3>London</h3><span class="ctry">United Kingdom · LGW</span></div>
+        </div>
+        <div class="body"><div class="from">Return from</div><div class="pr"><span class="cur">AED</span> 1,499</div><div class="tag">Non-stop · 2× miles this month</div></div>
+      </div>
+      <div class="dest" onclick="quickSearch('IST','Istanbul')">
+        <div class="img" style="background:linear-gradient(135deg,#8C5B3F,#C08457)">
+          <div><h3>Istanbul</h3><span class="ctry">Türkiye · SAW</span></div>
+        </div>
+        <div class="body"><div class="from">Return from</div><div class="pr"><span class="cur">AED</span> 899</div><div class="tag">Non-stop · 4h 45m</div></div>
+      </div>
+      <div class="dest" onclick="quickSearch('TBS','Tbilisi')">
+        <div class="img" style="background:linear-gradient(135deg,#1F6B5B,#3E9B82)">
+          <div><h3>Tbilisi</h3><span class="ctry">Georgia · TBS</span></div>
+        </div>
+        <div class="body"><div class="from">Return from</div><div class="pr"><span class="cur">AED</span> 749</div><div class="tag">Non-stop · 3h 20m</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EXPERIENCE ============ -->
+<section class="block" id="experience" style="background:var(--bg)">
+  <div class="wrap">
+    <div class="sechead">
+      <h2>Why fly with us</h2>
+      <p>Business Class on the Boeing 737 MAX 8 across the network.</p>
+    </div>
+    <div class="grid4">
+      <div class="feat"><div class="ico">🛏</div><h4>Lie-flat Business</h4><p>1.5 m of personal space with a 25-inch personal screen on every seat.</p></div>
+      <div class="feat"><div class="ico">🧳</div><h4>40 kg baggage</h4><p>Generous allowance with priority check-in and boarding at Terminal 3.</p></div>
+      <div class="feat"><div class="ico">⚡</div><h4>Fast-track at DXB</h4><p>Skip the queue at check-in, security and immigration in Dubai.</p></div>
+      <div class="feat"><div class="ico">🔄</div><h4>Free date changes</h4><p>Change your travel date once at no fee on Value and Flex fares.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SKYWARDS ============ -->
+<section class="block" id="skywards">
+  <div class="wrap">
+    <div class="skyband">
+      <div>
+        <div class="kick">Skywards loyalty</div>
+        <h2>Your seat upfront, for fewer miles</h2>
+        <p>Gold and Silver members can upgrade any Economy booking to Business Class at a reduced miles rate on selected routes — including London, Istanbul, Prague and Zanzibar. Redeem reward flights from as few as 7,500 miles.</p>
+        <button class="btn-ghost" style="margin-top:18px" onclick="track('Skywards_Join','skywards');toast('Skywards enrolment opened (demo).')">Join Skywards</button>
+      </div>
+      <div class="tierbox">
+        <div class="tierrow"><span class="nm">Blue</span><span class="vl">From 0 miles</span></div>
+        <div class="tierrow"><span class="nm">Silver</span><span class="vl">25,000 miles</span></div>
+        <div class="tierrow"><span class="nm">Gold</span><span class="vl">50,000 miles</span></div>
+        <div class="tierrow"><span class="nm">Business upgrade</span><span class="vl">12,500 miles</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div class="fbrand">
+        <div class="brand"><div><div><span class="fly">fly</span><span class="dubai">dubai</span></div><small>DEMO</small></div></div>
+        <p>An illustrative booking experience created to demonstrate Dynamics 365 Customer Insights – Journeys web tracking and trigger-based journeys.</p>
+      </div>
+      <div><h5>Plan</h5><ul><li><a href="#">Book a flight</a></li><li><a href="#">Timetable</a></li><li><a href="#">Destinations</a></li><li><a href="#">Special offers</a></li></ul></div>
+      <div><h5>Manage</h5><ul><li><a href="#manage">My booking</a></li><li><a href="#checkin">Online check-in</a></li><li><a href="#">Flight status</a></li><li><a href="#">Baggage</a></li></ul></div>
+      <div><h5>Experience</h5><ul><li><a href="#experience">Business Class</a></li><li><a href="#experience">Economy</a></li><li><a href="#">Inflight dining</a></li><li><a href="#">Entertainment</a></li></ul></div>
+      <div><h5>Help</h5><ul><li><a href="#">Contact us</a></li><li><a href="#">FAQs</a></li><li><a href="#">Travel advisories</a></li><li><a href="#">Privacy</a></li></ul></div>
+    </div>
+    <div class="fbot">
+      <span>© 2026 Demo site · Built for a Microsoft Dynamics 365 CIJ proof of concept.</span>
+      <span>Dubai, United Arab Emirates</span>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<script>
+/* ---------- CIJ tracking helper ----------
+   The NotifierPublic endpoint only accepts three signal names: "view",
+   "action" and "user". A custom trackEvent({name:'FlightSearch'}) is
+   rejected with HTTP 400, so every custom interaction is sent as an
+   ACTION signal (trackAction) carrying the custom fields in properties,
+   and every meaningful step is also sent as a VIEW signal with a
+   distinct URL so CIJ's out-of-the-box "Website visited" trigger can
+   filter on the page URL. Property values are coerced to strings
+   because the SDK calls .toString() on each one. */
+function cijProps(where, extra){
+  var props = { page:'home', area:String(where||'') };
+  if(extra){
+    for(var k in extra){
+      if(!Object.prototype.hasOwnProperty.call(extra,k)) continue;
+      var v = extra[k];
+      if(v === null || v === undefined || v === '') continue;
+      props[k] = String(v);
+    }
+  }
+  return props;
+}
+
+/* Fires an ACTION signal. Custom fields survive in properties. */
+function track(name, where, extra){
+  var props = cijProps(where, extra);
+  try{
+    if (window.MSCI && typeof window.MSCI.trackAction === 'function'){
+      window.MSCI.trackAction({
+        type: 'other',
+        name: name,
+        elementId: name,
+        properties: props
+      });
+    }
+    console.log('[CIJ action]', name, props);
+  }catch(e){ console.warn('trackAction failed', name, e); }
+}
+
+/* Fires a VIEW signal against an explicit URL. Any query-string keys
+   listed in queryStringAttributes (see the config block in <head>)
+   are lifted onto the signal automatically. */
+function trackPage(uri, title, where, extra){
+  try{
+    if (window.MSCI && typeof window.MSCI.trackView === 'function'){
+      window.MSCI.trackView({
+        uri: uri,
+        name: title,
+        properties: cijProps(where, extra)
+      });
+    }
+    console.log('[CIJ view]', uri, title);
+  }catch(e){ console.warn('trackView failed', uri, e); }
+}
+
+/* ---------- toast ---------- */
+var toastT;
+function toast(msg){
+  var el=document.getElementById('toast');
+  document.getElementById('toastMsg').textContent=msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT=setTimeout(function(){el.classList.remove('show')},4200);
+}
+
+/* ---------- dates ---------- */
+function iso(d){ return d.toISOString().slice(0,10); }
+function fmtDay(d){ return d.toLocaleDateString('en-GB',{weekday:'short'}); }
+function fmtDate(d){ return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
+function fmtLong(d){ return d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
+
+var today=new Date();
+var depDefault=new Date(today.getTime()+21*864e5);
+var retDefault=new Date(today.getTime()+28*864e5);
+document.getElementById('dep').value=iso(depDefault);
+document.getElementById('ret').value=iso(retDefault);
+document.getElementById('dep').min=iso(today);
+document.getElementById('ret').min=iso(today);
+
+/* ---------- trip type ---------- */
+function setTrip(el){
+  document.querySelectorAll('.triptab').forEach(function(t){t.classList.remove('on')});
+  el.classList.add('on');
+  var trip=el.dataset.trip;
+  document.getElementById('ret').disabled = (trip!=='return');
+  track('TripType_Change','search',{tripType:trip});
+}
+
+function swapPorts(){
+  var o=document.getElementById('origin'), d=document.getElementById('dest');
+  var ov=o.value, dv=d.value;
+  if([].slice.call(d.options).some(function(x){return x.value===ov}) &&
+     [].slice.call(o.options).some(function(x){return x.value===dv})){
+    o.value=dv; d.value=ov;
+  }
+  track('Swap_Airports','search');
+}
+
+/* ---------- route data ---------- */
+var AIRPORTS={
+  DXB:{city:'Dubai',name:'Dubai International'}, SHJ:{city:'Sharjah',name:'Sharjah'},
+  AUH:{city:'Abu Dhabi',name:'Abu Dhabi'}, LGW:{city:'London',name:'London Gatwick'},
+  IST:{city:'Istanbul',name:'Istanbul Sabiha Gökçen'}, PRG:{city:'Prague',name:'Prague'},
+  TBS:{city:'Tbilisi',name:'Tbilisi'}, ZNZ:{city:'Zanzibar',name:'Zanzibar'}, COK:{city:'Kochi',name:'Kochi'}
+};
+var ROUTES={
+  'DXB-LGW':{dur:'7h 45m',base:1499,biz:5899,flights:[
+    {no:'FZ 7',dep:'02:25',arr:'06:10',dur:'7h 45m',eco:1499,biz:5899,seats:4},
+    {no:'FZ 17',dep:'09:40',arr:'13:25',dur:'7h 45m',eco:1649,biz:6250,seats:9},
+    {no:'FZ 9',dep:'14:15',arr:'18:05',dur:'7h 50m',eco:1875,biz:6740,seats:2}
+  ]},
+  'DXB-IST':{dur:'4h 45m',base:899,biz:3250,flights:[
+    {no:'FZ 755',dep:'03:10',arr:'06:55',dur:'4h 45m',eco:899,biz:3250,seats:12},
+    {no:'FZ 757',dep:'15:35',arr:'19:20',dur:'4h 45m',eco:1050,biz:3480,seats:6}
+  ]},
+  'DXB-TBS':{dur:'3h 20m',base:749,biz:2690,flights:[
+    {no:'FZ 711',dep:'08:05',arr:'10:25',dur:'3h 20m',eco:749,biz:2690,seats:8}
+  ]}
+};
+function routeKey(o,d){ return o+'-'+d; }
+function getRoute(o,d){
+  var k=routeKey(o,d);
+  if(ROUTES[k]) return ROUTES[k];
+  var base=680+Math.round(Math.random()*500);
+  return {dur:'4h 30m',base:base,biz:Math.round(base*3.4),flights:[
+    {no:'FZ '+(100+Math.floor(Math.random()*800)),dep:'07:30',arr:'12:00',dur:'4h 30m',eco:base,biz:Math.round(base*3.4),seats:7},
+    {no:'FZ '+(100+Math.floor(Math.random()*800)),dep:'18:45',arr:'23:15',dur:'4h 30m',eco:Math.round(base*1.12),biz:Math.round(base*3.7),seats:5}
+  ]};
+}
+
+var state={origin:'DXB',dest:'LGW',dep:null,sel:null};
+
+/* ---------- search ---------- */
+function doSearch(e){
+  if(e) e.preventDefault();
+  var o=document.getElementById('origin').value;
+  var d=document.getElementById('dest').value;
+  var dep=document.getElementById('dep').value;
+  var ret=document.getElementById('ret').value;
+  var pax=document.getElementById('pax').value;
+  var trip=document.querySelector('.triptab.on').dataset.trip;
+
+  if(o===d){ toast('Origin and destination must be different.'); return false; }
+
+  state.origin=o; state.dest=d; state.dep=dep;
+
+  var route=getRoute(o,d);
+
+  var cabin = (pax.indexOf('business')>-1?'Business':'Economy');
+  var paxCount = parseInt(pax,10)||1;
+
+  /* ---- the key tracked interaction for the abandoned-search journey ----
+     We emit BOTH signals:
+       1. a VIEW against /search?from=DXB&to=LGW&...  so the CIJ
+          out-of-the-box "Website visited" trigger can match on URL;
+       2. an ACTION carrying the structured search fields, whose names
+          mirror the msdynmkt_flightsearchabandoned_fdb001 trigger. */
+  var qs = 'from='+encodeURIComponent(o)+
+           '&to='+encodeURIComponent(d)+
+           '&depart='+encodeURIComponent(dep)+
+           '&ret='+encodeURIComponent(trip==='return'?ret:'')+
+           '&cabin='+encodeURIComponent(cabin)+
+           '&pax='+paxCount+
+           '&trip='+encodeURIComponent(trip);
+  var searchUrl = location.origin + location.pathname + '?' + qs;
+  state.searchUrl = searchUrl;
+
+  try{ history.replaceState(null,'',location.pathname+'?'+qs); }catch(err){}
+
+  var searchFields = {
+    originAirport:o,
+    destinationAirport:d,
+    destinationCity:AIRPORTS[d]?AIRPORTS[d].city:d,
+    departureDate:dep,
+    returnDate:(trip==='return'?ret:''),
+    tripType:trip,
+    cabinClass:cabin,
+    passengers:paxCount,
+    lowestFareAED:route.base,
+    currency:'AED'
+  };
+  state.searchFields = searchFields;
+
+  trackPage(searchUrl,
+            'Flight search — '+o+' to '+d,
+            'search',
+            searchFields);
+
+  track('FlightSearch', 'search', searchFields);
+
+  document.getElementById('resTitle').textContent =
+    (AIRPORTS[o]?AIRPORTS[o].city:o)+' ('+o+') → '+(AIRPORTS[d]?AIRPORTS[d].name:d)+' ('+d+')';
+  var dd=new Date(dep+'T00:00:00');
+  document.getElementById('resMeta').textContent =
+    fmtLong(dd)+' · '+(trip==='return'?'Return':'One way')+' · '+
+    (pax.indexOf('business')>-1?'Business Class':'Economy')+' · '+route.flights.length+' flights found';
+
+  renderDates(dd, route);
+  renderFlights(route);
+
+  var res=document.getElementById('results');
+  res.classList.add('show');
+  res.scrollIntoView({behavior:'smooth',block:'start'});
+  return false;
+}
+
+function quickSearch(code, city){
+  document.getElementById('dest').value=code;
+  track('Destination_Card_Click','destinations',{destinationAirport:code,destinationCity:city});
+  doSearch();
+}
+
+function renderDates(center, route){
+  var strip=document.getElementById('dateStrip');
+  strip.innerHTML='';
+  for(var i=-3;i<=3;i++){
+    var d=new Date(center.getTime()+i*864e5);
+    var price=Math.round(route.base*(1+(i===0?0:(Math.abs(i)*0.055+(i<0?0.02:0)))));
+    var cell=document.createElement('div');
+    cell.className='dcell'+(i===0?' on':'');
+    cell.innerHTML='<div class="dd">'+fmtDay(d)+'</div><div class="dp">'+fmtDate(d)+'</div><div class="df">AED '+price.toLocaleString()+'</div>';
+    (function(dt){
+      cell.onclick=function(){
+        document.getElementById('dep').value=iso(dt);
+        track('FlexDate_Click','results',{departureDate:iso(dt)});
+        doSearch();
+      };
+    })(d);
+    strip.appendChild(cell);
+  }
+}
+
+function renderFlights(route){
+  var list=document.getElementById('flightList');
+  var o=state.origin, d=state.dest;
+  list.innerHTML='';
+  route.flights.forEach(function(f,idx){
+    var el=document.createElement('div');
+    el.className='flight';
+    el.innerHTML=
+      '<div class="ftop">'+
+        '<div class="fleg">'+
+          '<div class="ftime"><div class="t">'+f.dep+'</div><div class="a">'+o+'</div></div>'+
+          '<div class="fpath"><div class="dur">'+f.dur+'</div><div class="fline"><span class="fplane">✈</span></div>'+
+            '<div class="stop">Non-stop</div><div class="fno">'+f.no+' · Boeing 737 MAX 8</div></div>'+
+          '<div class="ftime"><div class="t">'+f.arr+'</div><div class="a">'+d+'</div></div>'+
+        '</div>'+
+        '<div class="fare" data-c="Lite"><div class="cls">Lite</div><div class="amt"><span class="cur">AED</span>'+f.eco.toLocaleString()+'</div><div class="note">Hand baggage only</div></div>'+
+        '<div class="fare" data-c="Value"><div class="cls">Value</div><div class="amt"><span class="cur">AED</span>'+Math.round(f.eco*1.22).toLocaleString()+'</div><div class="note">30 kg · free changes</div></div>'+
+        '<div class="fare" data-c="Business"><div class="cls">Business</div><div class="amt"><span class="cur">AED</span>'+f.biz.toLocaleString()+'</div><div class="note">Lie-flat · 40 kg</div>'+
+          (f.seats<=4?'<div class="seats">Only '+f.seats+' seats left</div>':'')+'</div>'+
+      '</div>'+
+      '<div class="fbottom"><span>✓ 2× Skywards miles</span><span>✓ Free seat selection from Value</span><span>✓ Fast-track available at DXB</span></div>';
+
+    el.querySelectorAll('.fare').forEach(function(fare){
+      fare.onclick=function(){
+        list.querySelectorAll('.fare').forEach(function(x){x.classList.remove('sel')});
+        fare.classList.add('sel');
+        var cabin=fare.dataset.c;
+        var amt=fare.querySelector('.amt').textContent.replace(/[^\d]/g,'');
+        track('FareSelected','results',{
+          flightNumber:f.no, originAirport:o, destinationAirport:d,
+          departureDate:state.dep, cabinClass:cabin, fareAED:parseInt(amt,10)
+        });
+        toast(cabin+' fare selected on '+f.no+' — continue to passenger details.');
+      };
+    });
+    list.appendChild(el);
+  });
+}
+
+/* ---------- exit intent: the "abandoned search" moment ---------- */
+var abandonFired=false;
+function fireAbandon(reason){
+  if(abandonFired) return;
+  if(!document.getElementById('results').classList.contains('show')) return;
+  abandonFired=true;
+  var fields = state.searchFields || {};
+  var payload = {
+    originAirport:fields.originAirport||state.origin,
+    destinationAirport:fields.destinationAirport||state.dest,
+    destinationCity:fields.destinationCity||state.dest,
+    departureDate:fields.departureDate||state.dep,
+    returnDate:fields.returnDate||'',
+    cabinClass:fields.cabinClass||'Economy',
+    passengers:fields.passengers||1,
+    lowestFareAED:fields.lowestFareAED||getRoute(state.origin,state.dest).base,
+    currency:'AED',
+    reason:reason
+  };
+  /* VIEW on a distinct /abandoned URL so a CIJ "Website visited"
+     trigger can match it without needing a custom signal name. */
+  var qs='from='+encodeURIComponent(payload.originAirport)+
+         '&to='+encodeURIComponent(payload.destinationAirport)+
+         '&depart='+encodeURIComponent(payload.departureDate)+
+         '&cabin='+encodeURIComponent(payload.cabinClass)+
+         '&stage=abandoned';
+  trackPage(location.origin+location.pathname+'?'+qs,
+            'Flight search abandoned — '+payload.originAirport+' to '+payload.destinationAirport,
+            'results', payload);
+  track('FlightSearchAbandoned','results',payload);
+  console.log('[CIJ] FlightSearchAbandoned fired:', reason);
+}
+document.addEventListener('mouseout',function(e){
+  if(!e.relatedTarget && e.clientY<=0) fireAbandon('exit_intent');
+});
+/* visibilitychange is far more reliable than beforeunload for getting
+   a final beacon out before the tab is backgrounded or closed. */
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='hidden') fireAbandon('tab_hidden');
+});
+window.addEventListener('pagehide',function(){ fireAbandon('page_unload'); });
+setTimeout(function(){ fireAbandon('idle_90s'); },90000);
+
+/* fire an explicit page view on load */
+window.addEventListener('load',function(){
+  try{
+    if(window.MSCI && typeof window.MSCI.trackView==='function'){
+      window.MSCI.trackView({ name:'flydubai Demo — Home', uri:location.href });
+    }
+  }catch(e){}
+  console.log('[CIJ] web tracking initialised');
+});
+</script>
+</body>
+</html>
