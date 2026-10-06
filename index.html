@@ -11,27 +11,27 @@
 
 <!-- ===== Dynamics 365 Customer Insights – Journeys web tracking ===== -->
 <script>
-    (function (a, t, i) { var e = "MSCI"; var s = "Analytics"; var o = e + "queue"; a[o] = a[o] || []; var r = a[e] || function (n) { var t = {}; t[s] = {}; function e(e) { while (e.length) { var r = e.pop(); t[s][r] = function (e) { return function () { a[o].push([e, n, arguments]) } }(r) } } var r = "track"; var i = "set"; e([r + "Event", r + "View", r + "Action", i + "Config", i + "Property", i + "User", "initialize", "teardown"]); return t }(i.name); var n = i.name; if (!a[e]) { a[n] = r[s]; a[o].push(["new", n]); setTimeout(function () { var e = "script"; var r = t.createElement(e); r.async = 1; r.src = i.src; var n = t.getElementsByTagName(e)[0]; n.parentNode.insertBefore(r, n) }, 1) } else { a[n] = new r[s] } if (i.user) { a[n].setUser(i.user) } if (i.props) { for (var c in i.props) { a[n].setProperty(c, i.props[c]) } } a[n].initialize(i.cfg) })(window, document, {
+        (function (a, t, i) { var e = "MSCI"; var s = "Analytics"; var o = e + "queue"; a[o] = a[o] || []; var r = a[e] || function (n) { var t = {}; t[s] = {}; function e(e) { while (e.length) { var r = e.pop(); t[s][r] = function (e) { return function () { a[o].push([e, n, arguments]) } }(r) } } var r = "track"; var i = "set"; e([r + "Event", r + "View", r + "Action", i + "Config", i + "Property", i + "User", "initialize", "teardown"]); return t }(i.name); var n = i.name; if (!a[e]) { a[n] = r[s]; a[o].push(["new", n]); setTimeout(function () { var e = "script"; var r = t.createElement(e); r.async = 1; r.src = i.src; var n = t.getElementsByTagName(e)[0]; n.parentNode.insertBefore(r, n) }, 1) } else { a[n] = new r[s] } if (i.user) { a[n].setUser(i.user) } if (i.props) { for (var c in i.props) { a[n].setProperty(c, i.props[c]) } } a[n].initialize(i.cfg) })(window, document, {
 
-        src: "https://rdrect-eur1.mkt.dynamics.com/webtracking/WebTracking/WebTracking.bundle.js",
-        name: "MSCI",
-        cfg: {
+            src: "https://rdrect-eur1.mkt.dynamics.com/webtracking/WebTracking/WebTracking.bundle.js",
+            name: "MSCI",
+            cfg: {
 
-            ingestionKey: "n/OuH+wZ9Gr/L7dvSuQTAe8gu5Y6iccYkPSvR3pltgo=",
-            endpointUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/2e20ea40-bb60-f011-8ee3-000d3aa9bf7e/notifierpublic/webtracking/events",
-            allowIpAddressCollection: false,
-            queryStringAttributes: ["from","to","depart","ret","cabin","pax","trip"],
-            autoCapture: {
-                view: true,
-                click: true
-            },
-            orgInfo: {
-                orgId: "2e20ea40-bb60-f011-8ee3-000d3aa9bf7e",
-                orgTenantId: "5160aab0-e6f5-4c4a-b800-6d5280cd34e5",
-                orgGeo: "EUR"
+                ingestionKey: "n/OuH+wZ9Gr/L7dvSuQTAe8gu5Y6iccYkPSvR3pltgo=",
+                endpointUrl: "https://public-eur.mkt.dynamics.com/api/v1.0/orgs/2e20ea40-bb60-f011-8ee3-000d3aa9bf7e/notifierpublic/webtracking/events",
+                allowIpAddressCollection: false,
+                queryStringAttributes: [],
+                autoCapture: {
+                    view: true,
+                    click: true
+                },
+                orgInfo: {
+                    orgId: "2e20ea40-bb60-f011-8ee3-000d3aa9bf7e",
+                    orgTenantId: "5160aab0-e6f5-4c4a-b800-6d5280cd34e5",
+                    orgGeo: "EUR"
+                }
             }
-        }
-      });
+          });
 </script>
 <!-- ===== end web tracking ===== -->
 
