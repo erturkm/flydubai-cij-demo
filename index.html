@@ -212,6 +212,40 @@ footer{background:var(--navy-dk);color:#A9BDD8;padding:46px 0 26px;font-size:13p
 .toast.show{opacity:1;transform:translateY(0)}
 .toast .dot{width:9px;height:9px;border-radius:50%;background:var(--orange);flex-shrink:0}
 
+/* ---------- identification modal (exit intent) ---------- */
+.modal-ov{position:fixed;inset:0;background:rgba(0,20,45,.62);backdrop-filter:blur(3px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s}
+.modal-ov.show{opacity:1;pointer-events:auto}
+.modal{background:#fff;border-radius:14px;max-width:470px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.34);overflow:hidden;transform:translateY(16px) scale(.98);transition:transform .22s}
+.modal-ov.show .modal{transform:translateY(0) scale(1)}
+.modal-hd{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dk) 100%);color:#fff;padding:26px 30px 24px;position:relative}
+.modal-hd h3{font-size:21px;font-weight:700;margin-bottom:7px;letter-spacing:-.2px}
+.modal-hd p{font-size:13.5px;opacity:.88;line-height:1.5}
+.modal-x{position:absolute;top:15px;right:16px;background:rgba(255,255,255,.14);border:0;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:17px;line-height:1;transition:.15s;font-family:inherit}
+.modal-x:hover{background:rgba(255,255,255,.28)}
+.modal-bd{padding:26px 30px 30px}
+.modal-route{display:flex;align-items:center;gap:13px;background:var(--bg,#F4F6FA);border-radius:9px;padding:14px 16px;margin-bottom:19px}
+.modal-route .mr-air{font-size:17px;font-weight:700;color:var(--navy)}
+.modal-route .mr-arr{color:var(--orange);font-size:15px}
+.modal-route .mr-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.modal-route .mr-fare{margin-left:auto;text-align:right}
+.modal-route .mr-fare b{display:block;font-size:17px;color:var(--navy)}
+.modal-route .mr-fare span{font-size:11px;color:var(--muted)}
+.modal-lbl{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:7px}
+.modal-in{width:100%;padding:13px 15px;border:1.5px solid #D5DCE6;border-radius:8px;font-size:14.5px;font-family:inherit;transition:.15s;color:var(--ink)}
+.modal-in:focus{outline:0;border-color:var(--orange);box-shadow:0 0 0 3px rgba(245,130,32,.13)}
+.modal-in.err{border-color:#D64545;box-shadow:0 0 0 3px rgba(214,69,69,.11)}
+.modal-err{color:#D64545;font-size:12px;margin-top:7px;display:none}
+.modal-err.show{display:block}
+.modal-btn{width:100%;margin-top:17px;background:var(--orange);color:#fff;border:0;padding:14px;border-radius:8px;font-size:14.5px;font-weight:700;cursor:pointer;transition:.15s;font-family:inherit}
+.modal-btn:hover{background:var(--orange-dk)}
+.modal-btn:disabled{opacity:.6;cursor:default}
+.modal-skip{display:block;width:100%;margin-top:11px;background:0;border:0;color:var(--muted);font-size:12.5px;cursor:pointer;text-decoration:underline;font-family:inherit}
+.modal-fine{font-size:11px;color:var(--muted);margin-top:15px;line-height:1.5;text-align:center}
+.modal-ok{text-align:center;padding:14px 0 6px}
+.modal-ok .ok-ic{width:52px;height:52px;border-radius:50%;background:#E8F5EC;color:#1E8E3E;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 15px}
+.modal-ok h4{font-size:17px;color:var(--navy);margin-bottom:8px}
+.modal-ok p{font-size:13.5px;color:var(--muted);line-height:1.55}
+
 @media(max-width:1000px){
   .fieldrow{grid-template-columns:1fr 1fr;gap:14px}
   .btn-search{grid-column:1/-1}
@@ -257,7 +291,7 @@ footer{background:var(--navy-dk);color:#A9BDD8;padding:46px 0 26px;font-size:13p
     </nav>
     <div class="util">
       <span class="lang">🌐 EN &nbsp;|&nbsp; AED</span>
-      <button class="btn-login" onclick="track('Login_Click','header')">Sign in</button>
+      <button class="btn-login" onclick="track('Login_Click','header');showIdModal(state.searchFields||{},'signin_click','signin')">Sign in</button>
     </div>
     <button class="burger" aria-label="Menu">☰</button>
   </div>
@@ -441,6 +475,34 @@ footer{background:var(--navy-dk);color:#A9BDD8;padding:46px 0 26px;font-size:13p
 </footer>
 
 <div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
+
+<!-- ===== identification modal (exit intent / idle) ===== -->
+<div class="modal-ov" id="idModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="idModalTitle">
+    <div class="modal-hd">
+      <button class="modal-x" id="idClose" aria-label="Close">&times;</button>
+      <h3 id="idModalTitle">Leaving so soon?</h3>
+      <p id="idModalSub">We'll email you this itinerary and alert you the moment the fare drops.</p>
+    </div>
+    <div class="modal-bd" id="idBody">
+      <div class="modal-route" id="idRoute">
+        <div>
+          <div><span class="mr-air" id="idOrig">DXB</span> <span class="mr-arr">&#8594;</span> <span class="mr-air" id="idDest">LGW</span></div>
+          <div class="mr-meta" id="idMeta">&nbsp;</div>
+        </div>
+        <div class="mr-fare"><b id="idFare">&nbsp;</b><span>from</span></div>
+      </div>
+      <form id="idForm" novalidate>
+        <label class="modal-lbl" for="idEmail">Email address</label>
+        <input class="modal-in" id="idEmail" type="email" placeholder="you@example.com" autocomplete="email" required>
+        <div class="modal-err" id="idErr">Please enter a valid email address.</div>
+        <button class="modal-btn" type="submit" id="idSubmit">Email me this fare</button>
+        <button class="modal-skip" type="button" id="idSkip">No thanks, continue browsing</button>
+      </form>
+      <p class="modal-fine">We'll only use this to send your itinerary and fare alerts. Demo site &mdash; no real emails are sent.</p>
+    </div>
+  </div>
+</div>
 
 <script>
 /* ---------- CIJ tracking helper ----------
@@ -713,6 +775,142 @@ function renderFlights(route){
   });
 }
 
+/* ================= identification: email -> contactid -> MSCI.setUser =================
+   CI-Data "Web tracking & personalization" is bound to table CRM_Passengers whose
+   primary key is contactid. setUser({authId}) must therefore receive that GUID.
+
+   Visitors type an email, so we need email -> contactid. We do NOT ship plaintext
+   emails or any API key to the browser. Instead the email is SHA-256 hashed in-page
+   and matched against a precomputed hash->contactid map (standard identity-matching
+   practice). An unmatched email still tracks the signup, just without identification.
+======================================================================================= */
+var FDB_IDENTITY_MODE='contactid';  /* switch to 'email' if CRM_Passengers is re-keyed */
+var FDB_ID_MAP={"0201ff71dccd4e8e":["b4d3f73f-5ac1-f111-a05a-7c1e52847c61","Michael","Silver",52000],"02c98cadd1c59b6f":["8b68d939-5ac1-f111-a05a-7c1e52847c61","Layla","Silver",41000],"0de834f77c271ef6":["2ce37566-73c1-f111-a05a-7c1e52847c61","Hassan","Gold",27468],"144c444eeeb2c8c4":["b5c1c86c-73c1-f111-a05a-7c1e52847c61","Ethan","Gold",32965],"18355f570b33d6c1":["254ed2e0-db6a-f111-ab0e-7c1e52847c61","Jamie","Gold",171000],"19ce00b3c070f01a":["f4b35260-73c1-f111-a05a-7c1e52847c61","Sofia","Blue",151156],"1c85e774039807ec":["bcc1c86c-73c1-f111-a05a-7c1e52847c61","Rajesh","Blue",117558],"1df4f311b4505958":["14e37566-73c1-f111-a05a-7c1e52847c61","Fatima","Blue",78064],"28d9b144966c5df2":["317bf245-5ac1-f111-a05a-7c1e52847c61","Grace","Blue",11000],"29486052169b24a5":["fd7af245-5ac1-f111-a05a-7c1e52847c61","Rajesh","Silver",68000],"2d418730d8af4c2c":["76d3f73f-5ac1-f111-a05a-7c1e52847c61","Saeed","Gold",186000],"301fe40134b2cc39":["1136215a-73c1-f111-a05a-7c1e52847c61","Elena","Silver",63000],"31446be1812d42e2":["d2c1c86c-73c1-f111-a05a-7c1e52847c61","Michael","Silver",154686],"340ccd706fa7630e":["5092e2e6-db6a-f111-ab0e-7c1e52847c61","Qamar","Gold",139000],"3aae9ba4e3f0f13d":["adc1c86c-73c1-f111-a05a-7c1e52847c61","Hind","Gold",193200],"45401e060b0d0d1a":["b9e6f14b-5ac1-f111-a05a-7c1e52847c61","Arjun","Gold",142000],"46058c4eed6eb4d7":["d8c1c86c-73c1-f111-a05a-7c1e52847c61","Khalid","Gold",66537],"530e508d4c7caf4d":["f1cbc572-73c1-f111-a05a-7c1e52847c61","Amara","Blue",26424],"583b290304d49c0a":["0f7bf245-5ac1-f111-a05a-7c1e52847c61","Chloe","Blue",5400],"597b1cf8e900847b":["f9cbc572-73c1-f111-a05a-7c1e52847c61","Layla","Silver",26975],"59b65f81e57e0f29":["ab68d939-5ac1-f111-a05a-7c1e52847c61","Noura","Gold",97000],"5b794a52268ad3eb":["cae6f14b-5ac1-f111-a05a-7c1e52847c61","Isabella","Blue",4100],"5c7793fa6c388bc2":["87d3f73f-5ac1-f111-a05a-7c1e52847c61","Hind","Blue",3200],"5d0e1562ced2a027":["55d3f73f-5ac1-f111-a05a-7c1e52847c61","Hassan","Blue",6500],"608ee0780315914d":["6c68d939-5ac1-f111-a05a-7c1e52847c61","Fatima","Gold",121000],"62909be095dcd123":["1be37566-73c1-f111-a05a-7c1e52847c61","Michael","Blue",74651],"62de9ea14fae8467":["21e37566-73c1-f111-a05a-7c1e52847c61","Chloe","Blue",68609],"6709eded9eedde03":["44d3f73f-5ac1-f111-a05a-7c1e52847c61","Maryam","Blue",9000],"699856c4d79aee0d":["3be37566-73c1-f111-a05a-7c1e52847c61","Lucas","Gold",46508],"723af14009570652":["e9cbc572-73c1-f111-a05a-7c1e52847c61","Tom","Silver",131758],"76b84f17ab2357bf":["96d3f73f-5ac1-f111-a05a-7c1e52847c61","James","Gold",163000],"7a438d6bafba05ad":["7b68d939-5ac1-f111-a05a-7c1e52847c61","Khalid","Silver",64000],"7f334d3509f42597":["dec1c86c-73c1-f111-a05a-7c1e52847c61","Grace","Blue",63864],"808211fd2fe4f76a":["25c1de33-5ac1-f111-a05a-7c1e52847c61","Omar","Gold",148000],"8b03cc1a9afaaed0":["0ae37566-73c1-f111-a05a-7c1e52847c61","Priya","Gold",134368],"8fb02217619ce849":["e97af245-5ac1-f111-a05a-7c1e52847c61","Elena","Gold",104000],"955e7367a1481e03":["1c85490e-dc6a-f111-ab0e-7c1e52847c61","Ahmed","Gold",128000],"9b4c13dea133c804":["06b45260-73c1-f111-a05a-7c1e52847c61","Abdullah","Silver",12730],"a42ac48b7f03be9c":["33e37566-73c1-f111-a05a-7c1e52847c61","Isabella","Silver",97846],"a65f55f77a3066cf":["028ae278-273d-f011-877b-000d3a4b92e1","Ercument","Gold",201000],"a751162356ff7b3c":["e3b35260-73c1-f111-a05a-7c1e52847c61","Priya","Blue",15324],"af51373ed8a9b25d":["65d3f73f-5ac1-f111-a05a-7c1e52847c61","Aisha","Silver",37000],"b61ecd99456d9316":["e8abf978-73c1-f111-a05a-7c1e52847c61","Nikhil","Silver",32100],"ba056026901a2175":["f4abf978-73c1-f111-a05a-7c1e52847c61","Omar","Silver",115632],"be4a87d05344c460":["e1cbc572-73c1-f111-a05a-7c1e52847c61","Maryam","Gold",68739],"c58d206953b0eef6":["d8cbc572-73c1-f111-a05a-7c1e52847c61","Tom","Gold",80208],"c5a8bb140bd12a33":["227bf245-5ac1-f111-a05a-7c1e52847c61","Tom","Silver",61000],"c70d8cab73209422":["9868d939-5ac1-f111-a05a-7c1e52847c61","Yousef","Blue",12000],"caf26eee0c8c78db":["ddb35260-73c1-f111-a05a-7c1e52847c61","Ethan","Gold",34370],"d7023b8aaea32745":["8985e826-6f08-f011-bae3-6045bd9ab721","Pablo","Silver",76000],"dbd115f3e7fb5886":["d77af245-5ac1-f111-a05a-7c1e52847c61","Daniel","Blue",8800],"e20e61cc49e6c8cf":["ffcbc572-73c1-f111-a05a-7c1e52847c61","Lucas","Silver",36700],"e2aede03d7d7a365":["c4c1c86c-73c1-f111-a05a-7c1e52847c61","Saeed","Silver",84728],"e3530d5b2d87ccda":["fdb35260-73c1-f111-a05a-7c1e52847c61","Amara","Silver",26520],"ebbaf8a460892c8d":["c77af245-5ac1-f111-a05a-7c1e52847c61","Sarah","Blue",15000],"ee6141b55d42b225":["01e37566-73c1-f111-a05a-7c1e52847c61","Rajesh","Gold",152802],"f10247ccaf951553":["bb68d939-5ac1-f111-a05a-7c1e52847c61","Ahmed","Silver",58000],"f552f63794c11a76":["cbc1c86c-73c1-f111-a05a-7c1e52847c61","Michael","Gold",104220],"fb7a47f7c1fda07d":["a5d3f73f-5ac1-f111-a05a-7c1e52847c61","Priya","Silver",71000],"fc4da6061494111c":["ebb35260-73c1-f111-a05a-7c1e52847c61","Layla","Blue",23685]};
+
+var idState={shown:false,identified:false,payload:null};
+
+function idHash(email){
+  var norm=String(email||'').trim().toLowerCase();
+  if(!window.crypto||!window.crypto.subtle) return Promise.resolve(null);
+  return window.crypto.subtle.digest('SHA-256',new TextEncoder().encode(norm))
+    .then(function(buf){
+      return Array.prototype.map.call(new Uint8Array(buf),function(b){
+        return ('0'+b.toString(16)).slice(-2);
+      }).join('').slice(0,16);
+    }).catch(function(){ return null; });
+}
+
+function identify(authId,who){
+  try{
+    if(window.MSCI && typeof window.MSCI.setUser==='function'){
+      window.MSCI.setUser({ authId: authId });
+      idState.identified=true;
+      console.log('[CIJ] MSCI.setUser authId=',authId,who?('('+who+')'):'');
+      return true;
+    }
+    console.warn('[CIJ] MSCI.setUser unavailable');
+  }catch(err){ console.warn('[CIJ] setUser failed',err); }
+  return false;
+}
+
+function showIdModal(payload,reason,mode){
+  if(idState.identified) return;
+  if(idState.shown && mode!=='signin') return;
+  idState.shown=true; idState.payload=payload||{};
+  var o=payload||{}, si=(mode==='signin');
+  document.getElementById('idModalTitle').textContent = si
+    ? 'Sign in to Skywards' : 'Leaving so soon?';
+  document.getElementById('idModalSub').textContent = si
+    ? 'Enter your email to access your miles, saved searches and member fares.'
+    : "We'll email you this itinerary and alert you the moment the fare drops.";
+  document.getElementById('idSubmit').textContent = si ? 'Continue' : 'Email me this fare';
+  document.getElementById('idSkip').textContent = si
+    ? 'Cancel' : 'No thanks, continue browsing';
+  document.getElementById('idRoute').style.display =
+    (si || !(o.originAirport||state.origin)) ? 'none' : '';
+  document.getElementById('idOrig').textContent=o.originAirport||state.origin;
+  document.getElementById('idDest').textContent=o.destinationAirport||state.dest;
+  var meta=[];
+  if(o.departureDate) meta.push(o.departureDate);
+  if(o.cabinClass) meta.push(o.cabinClass);
+  if(o.passengers) meta.push(o.passengers+' passenger'+(o.passengers>1?'s':''));
+  document.getElementById('idMeta').innerHTML=meta.length?meta.join(' &middot; '):'&nbsp;';
+  document.getElementById('idFare').textContent=o.lowestFareAED?('AED '+Number(o.lowestFareAED).toLocaleString()):'\u00a0';
+  document.getElementById('idModal').classList.add('show');
+  setTimeout(function(){ try{document.getElementById('idEmail').focus();}catch(e){} },260);
+  track('FareAlertModalShown','results',{reason:reason||'exit_intent',
+    originAirport:o.originAirport,destinationAirport:o.destinationAirport});
+}
+
+function hideIdModal(){ document.getElementById('idModal').classList.remove('show'); }
+
+(function(){
+  var ov=document.getElementById('idModal'),
+      form=document.getElementById('idForm'),
+      input=document.getElementById('idEmail'),
+      err=document.getElementById('idErr'),
+      btn=document.getElementById('idSubmit');
+
+  function dismiss(how){
+    hideIdModal();
+    track('FareAlertDismissed','results',{method:how});
+  }
+  document.getElementById('idClose').addEventListener('click',function(){ dismiss('close_button'); });
+  document.getElementById('idSkip').addEventListener('click',function(){ dismiss('skip_link'); });
+  ov.addEventListener('click',function(e){ if(e.target===ov) dismiss('overlay_click'); });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&ov.classList.contains('show')) dismiss('escape_key');
+  });
+
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var email=input.value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      input.classList.add('err'); err.classList.add('show'); input.focus(); return;
+    }
+    input.classList.remove('err'); err.classList.remove('show');
+    btn.disabled=true; btn.textContent='Setting up your alert\u2026';
+
+    idHash(email).then(function(h){
+      var rec = (h && FDB_ID_MAP[h]) || null;
+      var o = idState.payload||{};
+      var props={
+        originAirport:o.originAirport||state.origin,
+        destinationAirport:o.destinationAirport||state.dest,
+        departureDate:o.departureDate||'',
+        cabinClass:o.cabinClass||'Economy',
+        lowestFareAED:o.lowestFareAED||'',
+        currency:'AED',
+        matched: rec?true:false
+      };
+
+      if(rec){
+        var authId = (FDB_IDENTITY_MODE==='email') ? email.toLowerCase() : rec[0];
+        identify(authId,rec[1]);
+        props.skywardsTier=rec[2];
+        props.skywardsMiles=rec[3];
+      }
+      track('FareAlertSignup','results',props);
+
+      /* success state */
+      var name = rec?rec[1]:'';
+      var line2 = rec
+        ? ('Welcome back, '+name+'. Your '+rec[2]+' benefits and '+Number(rec[3]).toLocaleString()+
+           ' Skywards Miles are linked to this alert.')
+        : ('We\'ll email '+email+' as soon as this fare moves.');
+      document.getElementById('idBody').innerHTML=
+        '<div class="modal-ok"><div class="ok-ic">&#10003;</div>'+
+        '<h4>'+(rec?('Good to see you again, '+name+'!'):'You\'re all set')+'</h4>'+
+        '<p>'+line2+'</p></div>';
+      setTimeout(hideIdModal,2600);
+      toast(rec?('Identified as '+name+' \u00b7 '+rec[2]+' member'):'Fare alert created');
+    });
+  });
+  input.addEventListener('input',function(){
+    input.classList.remove('err'); err.classList.remove('show');
+  });
+})();
+
 /* ---------- exit intent: the "abandoned search" moment ---------- */
 var abandonFired=false;
 function fireAbandon(reason){
@@ -744,6 +942,9 @@ function fireAbandon(reason){
             'results', payload);
   track('FlightSearchAbandoned','results',payload);
   console.log('[CIJ] FlightSearchAbandoned fired:', reason);
+  /* visible re-engagement: only for reasons where the user can still see
+     the page. tab_hidden / page_unload cannot render anything useful. */
+  if(reason==='exit_intent'||reason==='idle_90s') showIdModal(payload,reason);
 }
 document.addEventListener('mouseout',function(e){
   if(!e.relatedTarget && e.clientY<=0) fireAbandon('exit_intent');
