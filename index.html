@@ -372,7 +372,7 @@ footer{background:var(--navy-dk);color:#A9BDD8;padding:46px 0 26px;font-size:13p
 .conf-cell b{font-size:14.5px;color:var(--navy);display:block;margin-top:3px}
 
 /* ---------- identification modal (exit intent) ---------- */
-.modal-ov{position:fixed;inset:0;background:rgba(0,20,45,.62);backdrop-filter:blur(3px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s}
+.modal-ov{position:fixed;inset:0;background:rgba(0,20,45,.62);backdrop-filter:blur(3px);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s}
 .modal-ov.show{opacity:1;pointer-events:auto}
 .modal{background:#fff;border-radius:14px;max-width:470px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.34);overflow:hidden;transform:translateY(16px) scale(.98);transition:transform .22s}
 .modal-ov.show .modal{transform:translateY(0) scale(1)}
@@ -1119,6 +1119,7 @@ function bkActiveProfile(){
 function openBooking(flight,cabin,fare){
   bk.open=true; bk.step=0; bk.flight=flight; bk.cabin=cabin; bk.fare=fare;
   bk.seat=null; bk.seatFee=0; bk.extras={}; bk.pax={}; bk.pnr=null;
+  bkAbandonedSteps={};
   var oc=FDB_CITY[state.origin]||state.origin, dc=FDB_CITY[state.dest]||state.dest;
   bkEl('bkRouteSub').textContent=oc+' \u2192 '+dc;
   bkEl('bkRouteMain').textContent=flight.no+' \u00b7 '+cabin+' \u00b7 '+fmtLong(new Date(state.dep+'T00:00:00'));
@@ -1135,21 +1136,7 @@ function openBooking(flight,cabin,fare){
 
 function closeBooking(reason){
   if(!bk.open) return;
-  var st=BK_STEPS[bk.step];
-  if(st.k!=='done'){
-    track('BookingAbandoned','booking',{step:st.k,stepLabel:st.label,stepIndex:bk.step+1,
-      flightNumber:bk.flight?bk.flight.no:'',cabinClass:bk.cabin,
-      originAirport:state.origin,destinationAirport:state.dest,
-      runningTotalAED:bkTotal(),seatSelected:bk.seat||'',reason:reason||'closed'});
-    trackPage(location.origin+location.pathname+'?stage=booking_abandoned&step='+st.k,
-      'Booking abandoned at '+st.label,'booking',{step:st.k});
-    try{
-      localStorage.setItem('fdb_pending',JSON.stringify({
-        originAirport:state.origin,destinationAirport:state.dest,
-        destCity:(FDB_CITY[state.dest]||''),departureDate:state.dep,
-        cabinClass:bk.cabin,lowestFareAED:bk.fare,bookingStep:st.k,ts:Date.now()}));
-    }catch(e){}
-  }
+  if(BK_STEPS[bk.step].k!=='done') fireBookingAbandon(reason||'closed');
   bk.open=false;
   bkEl('bkFlow').classList.remove('show');
   document.body.style.overflow='';
@@ -1606,18 +1593,40 @@ function identify(authId,who){
 }
 
 function showIdModal(payload,reason,mode){
-  if(idState.identified) return;
+  /* A known visitor has nothing left to identify, so outside the funnel we
+     stay quiet. Inside the funnel we still surface a recovery prompt - the
+     booking is the thing at risk, not the identity - but swap the email
+     capture for a confirm, since only hashes ship in this page and we have
+     no plaintext address to pre-fill. */
+  if(idState.identified && mode!=='booking') return;
   if(idState.shown && mode!=='signin') return;
   idState.shown=true; idState.payload=payload||{};
-  var o=payload||{}, si=(mode==='signin');
-  document.getElementById('idModalTitle').textContent = si
-    ? 'Sign in to Skywards' : 'Leaving so soon?';
-  document.getElementById('idModalSub').textContent = si
-    ? 'Enter your email to access your miles, saved searches and member fares.'
-    : "We'll email you this itinerary and alert you the moment the fare drops.";
-  document.getElementById('idSubmit').textContent = si ? 'Continue' : 'Email me this fare';
+  var o=payload||{}, si=(mode==='signin'), bkMode=(mode==='booking');
+
+  /* copy adapts to how far the visitor got - "leaving so soon?" is wrong
+     when someone is standing on the payment page with a seat selected. */
+  var title='Leaving so soon?',
+      sub="We'll email you this itinerary and alert you the moment the fare drops.",
+      cta='Email me this fare';
+  if(si){
+    title='Sign in to Skywards';
+    sub='Enter your email to access your miles, saved searches and member fares.';
+    cta='Continue';
+  }else if(bkMode){
+    var copy={
+      seats:  ['Save your seat?',      'Seat '+(o.seatSelected||'selection')+' is held for 20 minutes. We\u2019ll email this booking so you can pick up where you left off.'],
+      extras: ['Hold your booking?',   'We\u2019ll email your itinerary with the extras you chose so nothing is lost.'],
+      pax:    ['Almost there \u2014 save your progress?', 'Enter your email and we\u2019ll send a link straight back to this booking.'],
+      pay:    ['Your booking isn\u2019t confirmed yet',   'This fare is held for a short time. We\u2019ll email you a secure link to complete payment.']
+    }[o.step]||['Keep this booking?','We\u2019ll email your itinerary so you can finish whenever suits you.'];
+    title=copy[0]; sub=copy[1];
+    cta='Email me this booking';
+  }
+  document.getElementById('idModalTitle').textContent=title;
+  document.getElementById('idModalSub').textContent=sub;
+  document.getElementById('idSubmit').textContent=cta;
   document.getElementById('idSkip').textContent = si
-    ? 'Cancel' : 'No thanks, continue browsing';
+    ? 'Cancel' : (bkMode ? 'No thanks, continue booking' : 'No thanks, continue browsing');
   document.getElementById('idRoute').style.display =
     (si || !(o.originAirport||state.origin)) ? 'none' : '';
   document.getElementById('idOrig').textContent=o.originAirport||state.origin;
@@ -1626,11 +1635,28 @@ function showIdModal(payload,reason,mode){
   if(o.departureDate) meta.push(o.departureDate);
   if(o.cabinClass) meta.push(o.cabinClass);
   if(o.passengers) meta.push(o.passengers+' passenger'+(o.passengers>1?'s':''));
+  if(bkMode && o.seatSelected) meta.push('seat '+o.seatSelected);
+  if(bkMode && o.extrasCount) meta.push(o.extrasCount+' extra'+(o.extrasCount>1?'s':''));
   document.getElementById('idMeta').innerHTML=meta.length?meta.join(' &middot; '):'&nbsp;';
   document.getElementById('idFare').textContent=o.lowestFareAED?('AED '+Number(o.lowestFareAED).toLocaleString()):'\u00a0';
+  var fl=document.querySelector('#idRoute .mr-fare span');
+  if(fl) fl.textContent = bkMode ? 'your total' : 'from';
+  var known=(idState.identified && bkMode);
+  document.getElementById('idEmail').style.display = known ? 'none' : '';
+  document.querySelector('label[for="idEmail"]').style.display = known ? 'none' : '';
+  document.getElementById('idErr').style.display='none';
+  document.querySelector('.modal-fine').textContent = known
+    ? 'We\u2019ll send this to the address on your Skywards account. Demo site \u2014 no real emails are sent.'
+    : "We'll only use this to send your itinerary and fare alerts. Demo site \u2014 no real emails are sent.";
+  if(known){
+    var prof=bkActiveProfile();
+    document.getElementById('idSubmit').textContent =
+      'Yes, email it to me' + (prof&&prof.fn ? '' : '');
+  }
   document.getElementById('idModal').classList.add('show');
-  setTimeout(function(){ try{document.getElementById('idEmail').focus();}catch(e){} },260);
-  track('FareAlertModalShown','results',{reason:reason||'exit_intent',
+  if(!known) setTimeout(function(){ try{document.getElementById('idEmail').focus();}catch(e){} },260);
+  track('FareAlertModalShown',bkMode?'booking':'results',{reason:reason||'exit_intent',
+    mode:mode||'abandon', step:o.step||'',
     originAirport:o.originAirport,destinationAirport:o.destinationAirport});
 }
 
@@ -1656,6 +1682,17 @@ function hideIdModal(){ document.getElementById('idModal').classList.remove('sho
 
   form.addEventListener('submit',function(e){
     e.preventDefault();
+    /* known visitor inside the funnel: nothing to capture, just confirm */
+    if(idState.identified && input.style.display==='none'){
+      var ob=idState.payload||{};
+      track('BookingRecoveryAccepted','booking',
+        {step:ob.step||'',stepLabel:ob.stepLabel||'',
+         originAirport:ob.originAirport,destinationAirport:ob.destinationAirport,
+         runningTotalAED:ob.lowestFareAED||'',channel:'email'});
+      hideIdModal();
+      toast('Sent \u2014 check your inbox to pick up where you left off.');
+      return;
+    }
     var email=input.value.trim();
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
       input.classList.add('err'); err.classList.add('show'); input.focus(); return;
@@ -1710,14 +1747,51 @@ function hideIdModal(){ document.getElementById('idModal').classList.remove('sho
 
 /* ---------- exit intent: the "abandoned search" moment ---------- */
 var abandonFired=false;
-function fireAbandon(reason){
-  if(abandonFired) return;
-  /* if the booking funnel is open it reports its own, richer BookingAbandoned
-     with the exact step reached - do not also emit the generic search abandon. */
-  if(typeof bk!=='undefined' && bk.open){
-    if(reason==='exit_intent'||reason==='idle_90s') return;
-    closeBooking(reason); return;
+/* Exit intent inside the booking funnel.
+   Fires at most once per step so a visitor who wobbles through seats ->
+   extras -> payment produces three distinct drop-off signals rather than
+   one. The recovery modal is shown for the reasons where the user can
+   still see the page; for tab_hidden / page_unload we only beacon. */
+var bkAbandonedSteps={};
+function fireBookingAbandon(reason){
+  var st=BK_STEPS[bk.step];
+  if(st.k==='done') return;
+  var payload={
+    originAirport:state.origin, destinationAirport:state.dest,
+    destinationCity:FDB_CITY[state.dest]||state.dest,
+    departureDate:state.dep, cabinClass:bk.cabin,
+    lowestFareAED:bkTotal(), currency:'AED',
+    step:st.k, stepLabel:st.label, stepIndex:bk.step+1,
+    flightNumber:bk.flight?bk.flight.no:'', seatSelected:bk.seat||'',
+    extrasCount:Object.keys(bk.extras).length, reason:reason
+  };
+  if(!bkAbandonedSteps[st.k]){
+    bkAbandonedSteps[st.k]=true;
+    trackPage(location.origin+location.pathname+
+      '?from='+encodeURIComponent(state.origin)+'&to='+encodeURIComponent(state.dest)+
+      '&depart='+encodeURIComponent(state.dep)+'&cabin='+encodeURIComponent(bk.cabin)+
+      '&stage=booking_abandoned&step='+st.k,
+      'Booking abandoned at '+st.label+' \u2014 '+state.origin+' to '+state.dest,
+      'booking', payload);
+    track('BookingAbandoned','booking',payload);
+    try{
+      localStorage.setItem('fdb_pending',JSON.stringify({
+        originAirport:state.origin,destinationAirport:state.dest,
+        destCity:(FDB_CITY[state.dest]||''),departureDate:state.dep,
+        cabinClass:bk.cabin,lowestFareAED:bk.fare,bookingStep:st.k,ts:Date.now()}));
+    }catch(e){}
+    console.log('[CIJ] BookingAbandoned at',st.k,'reason',reason);
   }
+  if(reason==='exit_intent'||reason==='idle_90s'){
+    idState.shown=false;              /* allow one prompt per step */
+    showIdModal(payload,reason,'booking');
+  }
+}
+
+function fireAbandon(reason){
+  /* the funnel owns its own step-aware abandon signal */
+  if(typeof bk!=='undefined' && bk.open){ fireBookingAbandon(reason); return; }
+  if(abandonFired) return;
   if(!document.getElementById('results').classList.contains('show')) return;
   abandonFired=true;
   var fields = state.searchFields || {};
@@ -1764,7 +1838,7 @@ document.addEventListener('visibilitychange',function(){
   if(document.visibilityState==='hidden') fireAbandon('tab_hidden');
 });
 window.addEventListener('pagehide',function(){ fireAbandon('page_unload'); });
-setTimeout(function(){ fireAbandon('idle_90s'); },90000);
+setInterval(function(){ fireAbandon('idle_90s'); },90000);
 
 /* fire an explicit page view on load */
 window.addEventListener('load',function(){
