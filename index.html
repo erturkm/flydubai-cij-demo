@@ -934,6 +934,14 @@ function doSearch(e){
 
   state.origin=o; state.dest=d; state.dep=dep;
 
+  /* A new search starts a new abandon opportunity. Without this reset the
+     one-shot latches below stay armed from the previous route, so only the
+     FIRST route searched in a page session can ever report an abandon -
+     every later route is silently dropped and CIJ keeps seeing the stale one. */
+  abandonFired=false;
+  bkAbandonedSteps={};
+  idState.shown=false;
+
   var route=getRoute(o,d);
 
   var cabin = (pax.indexOf('business')>-1?'Business':'Economy');
