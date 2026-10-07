@@ -247,6 +247,130 @@ footer{background:var(--navy-dk);color:#A9BDD8;padding:46px 0 26px;font-size:13p
 .toast.show{opacity:1;transform:translateY(0)}
 .toast .dot{width:9px;height:9px;border-radius:50%;background:var(--orange);flex-shrink:0}
 
+/* ===================== BOOKING FUNNEL ===================== */
+.bk{display:none;position:fixed;inset:0;background:var(--bg);z-index:400;overflow-y:auto}
+.bk.show{display:block}
+.bk-top{background:var(--navy);color:#fff;position:sticky;top:0;z-index:10;box-shadow:0 2px 14px rgba(0,0,0,.18)}
+.bk-topin{max-width:1180px;margin:0 auto;padding:13px 20px;display:flex;align-items:center;gap:20px}
+.bk-back{background:rgba(255,255,255,.13);border:0;color:#fff;padding:8px 14px;border-radius:7px;
+  cursor:pointer;font-size:13px;font-family:inherit;transition:.15s;white-space:nowrap}
+.bk-back:hover{background:rgba(255,255,255,.26)}
+.bk-route{font-size:14.5px;font-weight:600}
+.bk-route span{opacity:.72;font-weight:400;font-size:13px;display:block;margin-top:1px}
+.bk-x{margin-left:auto;background:0;border:0;color:rgba(255,255,255,.72);font-size:24px;cursor:pointer;
+  line-height:1;font-family:inherit;padding:0 4px}
+.bk-x:hover{color:#fff}
+
+/* stepper */
+.steps{background:#fff;border-bottom:1px solid var(--line)}
+.steps-in{max-width:1180px;margin:0 auto;padding:0 20px;display:flex;overflow-x:auto}
+.step{flex:1;min-width:118px;padding:15px 8px 13px;text-align:center;font-size:12.5px;color:var(--muted);
+  position:relative;border-bottom:3px solid transparent;transition:.2s;white-space:nowrap}
+.step.on{color:var(--navy);font-weight:700;border-bottom-color:var(--orange)}
+.step.done{color:#1E8E3E}
+.step i{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--muted);
+  align-items:center;justify-content:center;font-size:11px;font-style:normal;margin-right:7px;font-weight:700}
+.step.on i{background:var(--orange);color:#fff}
+.step.done i{background:#1E8E3E;color:#fff}
+
+.bk-body{max-width:1180px;margin:0 auto;padding:26px 20px 60px;display:grid;
+  grid-template-columns:1fr 330px;gap:26px;align-items:start}
+@media(max-width:900px){.bk-body{grid-template-columns:1fr}}
+.bk-pane{background:#fff;border-radius:12px;padding:26px;box-shadow:var(--shadow)}
+.bk-pane h2{font-size:21px;color:var(--navy);margin-bottom:5px;letter-spacing:-.2px}
+.bk-pane .lede{font-size:13.5px;color:var(--muted);margin-bottom:22px}
+
+/* summary rail */
+.sum{background:#fff;border-radius:12px;box-shadow:var(--shadow);position:sticky;top:94px;overflow:hidden}
+.sum-h{background:var(--navy);color:#fff;padding:15px 19px;font-size:14px;font-weight:700}
+.sum-b{padding:17px 19px}
+.sum-fl{border-bottom:1px solid var(--line);padding-bottom:13px;margin-bottom:13px}
+.sum-fl b{display:block;font-size:14px;color:var(--navy)}
+.sum-fl span{font-size:12px;color:var(--muted);display:block;margin-top:2px}
+.sum-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:9px;gap:12px}
+.sum-row span:first-child{color:var(--muted)}
+.sum-row.tot{border-top:2px solid var(--line);margin-top:13px;padding-top:13px;
+  font-size:17px;font-weight:700;color:var(--navy)}
+.sum-row.tot span:first-child{color:var(--navy)}
+.sum-miles{background:#FFF6EC;border-radius:7px;padding:10px 13px;margin-top:13px;font-size:12px;color:#8A5200}
+.sum-miles b{color:var(--orange-dk)}
+
+/* seat map */
+.cabinlbl{text-align:center;font-size:11.5px;letter-spacing:1.4px;color:var(--muted);
+  margin:20px 0 11px;font-weight:700}
+.plane{max-width:390px;margin:0 auto;background:var(--bg);border-radius:30px 30px 13px 13px;padding:24px 17px 20px}
+.seatrow{display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:6px}
+.seatrow .rn{width:21px;font-size:10.5px;color:var(--muted);text-align:center;flex-shrink:0}
+.seatrow .aisle{width:17px}
+.seat{width:30px;height:30px;border-radius:6px;border:1.5px solid #C9D4E3;background:#fff;
+  font-size:10px;color:var(--muted);cursor:pointer;transition:.12s;font-family:inherit;flex-shrink:0}
+.seat:hover:not(.x){border-color:var(--orange);background:#FFF4E9;transform:scale(1.1)}
+.seat.x{background:#E7EBF1;border-color:#E7EBF1;color:#B4BECD;cursor:not-allowed}
+.seat.prem{border-color:#C8A96A;background:#FDF9F1;color:#8A6D2F}
+.seat.biz{border-color:var(--navy);background:#E9F0F9;color:var(--navy);width:38px}
+.seat.on{background:var(--orange)!important;border-color:var(--orange)!important;color:#fff!important;font-weight:700}
+.exitlbl{display:flex;align-items:center;justify-content:space-between;font-size:9.5px;
+  color:#1E8E3E;letter-spacing:.8px;margin:7px 2px;font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:15px;justify-content:center;margin-top:19px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:13px;height:13px;border-radius:4px;margin-right:6px;vertical-align:-2px;border:1.5px solid}
+.lg-free i{border-color:#C9D4E3;background:#fff}
+.lg-prem i{border-color:#C8A96A;background:#FDF9F1}
+.lg-biz i{border-color:var(--navy);background:#E9F0F9}
+.lg-tkn i{border-color:#E7EBF1;background:#E7EBF1}
+
+/* extras */
+.ex{display:flex;align-items:center;gap:15px;border:1.5px solid var(--line);border-radius:10px;
+  padding:15px 17px;margin-bottom:11px;transition:.15s}
+.ex:hover{border-color:#C9D4E3}
+.ex.on{border-color:var(--orange);background:#FFFaF5}
+.ex-ic{width:42px;height:42px;border-radius:9px;background:var(--bg);display:flex;align-items:center;
+  justify-content:center;font-size:20px;flex-shrink:0}
+.ex.on .ex-ic{background:#FFF1E3}
+.ex-tx{flex:1;min-width:0}
+.ex-tx b{display:block;font-size:14px;color:var(--navy);margin-bottom:2px}
+.ex-tx span{font-size:12.5px;color:var(--muted);line-height:1.45;display:block}
+.ex-pr{text-align:right;flex-shrink:0}
+.ex-pr b{display:block;font-size:14.5px;color:var(--navy);white-space:nowrap}
+.ex-pr button{margin-top:6px;background:#fff;border:1.5px solid var(--orange);color:var(--orange);
+  padding:6px 15px;border-radius:6px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.ex-pr button:hover{background:#FFF4E9}
+.ex.on .ex-pr button{background:var(--orange);color:#fff}
+
+/* forms */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-bottom:15px}
+@media(max-width:620px){.frow{grid-template-columns:1fr}}
+.fg label{display:block;font-size:12.5px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.fg input,.fg select{width:100%;padding:12px 14px;border:1.5px solid #D5DCE6;border-radius:8px;
+  font-size:14px;font-family:inherit;color:var(--ink);transition:.15s;background:#fff}
+.fg input:focus,.fg select:focus{outline:0;border-color:var(--orange);box-shadow:0 0 0 3px rgba(245,130,32,.13)}
+.fg input.err,.fg select.err{border-color:#D64545;box-shadow:0 0 0 3px rgba(214,69,69,.11)}
+.fg .hint{font-size:11.5px;color:var(--muted);margin-top:5px}
+.prefill{background:#E8F5EC;border-left:3px solid #1E8E3E;border-radius:7px;padding:11px 15px;
+  margin-bottom:19px;font-size:12.5px;color:#14632B}
+.bk-go{width:100%;background:var(--orange);color:#fff;border:0;padding:15px;border-radius:9px;
+  font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;margin-top:7px}
+.bk-go:hover{background:var(--orange-dk)}
+.bk-go:disabled{opacity:.55;cursor:default}
+.bk-skip{display:block;width:100%;margin-top:10px;background:0;border:0;color:var(--muted);
+  font-size:12.5px;cursor:pointer;text-decoration:underline;font-family:inherit}
+.securenote{display:flex;align-items:center;gap:9px;background:var(--bg);border-radius:8px;
+  padding:12px 15px;font-size:12px;color:var(--muted);margin-bottom:20px}
+
+/* confirmation */
+.conf{text-align:center;padding:16px 0 8px}
+.conf-ic{width:66px;height:66px;border-radius:50%;background:#E8F5EC;color:#1E8E3E;display:flex;
+  align-items:center;justify-content:center;font-size:33px;margin:0 auto 19px}
+.conf h2{font-size:25px;color:var(--navy);margin-bottom:9px}
+.conf .pnr{display:inline-block;background:var(--bg);border:1.5px dashed #C9D4E3;border-radius:9px;
+  padding:13px 27px;margin:19px 0;font-size:13px;color:var(--muted)}
+.conf .pnr b{display:block;font-size:25px;color:var(--navy);letter-spacing:3.5px;margin-top:4px}
+.conf-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
+  border-radius:10px;overflow:hidden;margin-top:24px;text-align:left}
+@media(max-width:620px){.conf-grid{grid-template-columns:1fr}}
+.conf-cell{background:#fff;padding:15px 17px}
+.conf-cell span{font-size:11.5px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:.6px}
+.conf-cell b{font-size:14.5px;color:var(--navy);display:block;margin-top:3px}
+
 /* ---------- identification modal (exit intent) ---------- */
 .modal-ov{position:fixed;inset:0;background:rgba(0,20,45,.62);backdrop-filter:blur(3px);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s}
 .modal-ov.show{opacity:1;pointer-events:auto}
@@ -522,6 +646,117 @@ footer{background:var(--navy-dk);color:#A9BDD8;padding:46px 0 26px;font-size:13p
     </div>
   </div>
 </footer>
+
+<!-- ===================== BOOKING FUNNEL ===================== -->
+<div class="bk" id="bkFlow">
+  <div class="bk-top">
+    <div class="bk-topin">
+      <button class="bk-back" id="bkBack">&#8592; Back</button>
+      <div class="bk-route"><span id="bkRouteSub">&nbsp;</span><span id="bkRouteMain" style="font-weight:600;font-size:14.5px;opacity:1">&nbsp;</span></div>
+      <button class="bk-x" id="bkClose" aria-label="Exit booking">&times;</button>
+    </div>
+  </div>
+
+  <div class="steps"><div class="steps-in" id="bkSteps"></div></div>
+
+  <div class="bk-body">
+    <div>
+      <!-- STEP 1: SEATS -->
+      <div class="bk-pane" id="paneSeats">
+        <h2>Choose your seat</h2>
+        <p class="lede" id="seatLede">Select a seat for your flight. Standard seats are complimentary on Value and Business fares.</p>
+        <div class="cabinlbl">BUSINESS CLASS</div>
+        <div class="plane" id="seatMapBiz"></div>
+        <div class="cabinlbl">ECONOMY</div>
+        <div class="plane" id="seatMapEco"></div>
+        <div class="legend">
+          <span class="lg-free"><i></i>Standard</span>
+          <span class="lg-prem"><i></i>Extra legroom</span>
+          <span class="lg-biz"><i></i>Business</span>
+          <span class="lg-tkn"><i></i>Taken</span>
+        </div>
+        <button class="bk-go" id="seatNext">Continue to extras</button>
+        <button class="bk-skip" id="seatSkip">Skip &mdash; assign me a seat at check-in</button>
+      </div>
+
+      <!-- STEP 2: EXTRAS -->
+      <div class="bk-pane" id="paneExtras" style="display:none">
+        <h2>Add extras to your trip</h2>
+        <p class="lede">Bundle now and save compared with buying at the airport.</p>
+        <div id="extrasList"></div>
+        <button class="bk-go" id="extrasNext">Continue to passenger details</button>
+        <button class="bk-skip" id="extrasSkip">No extras, continue</button>
+      </div>
+
+      <!-- STEP 3: PASSENGER -->
+      <div class="bk-pane" id="panePax" style="display:none">
+        <h2>Passenger details</h2>
+        <p class="lede">Enter names exactly as they appear on your passport.</p>
+        <div class="prefill" id="paxPrefill" style="display:none"></div>
+        <form id="paxForm" novalidate>
+          <div class="frow">
+            <div class="fg"><label for="pxTitle">Title</label>
+              <select id="pxTitle"><option>Mr</option><option>Ms</option><option>Mrs</option><option>Dr</option></select></div>
+            <div class="fg"><label for="pxFirst">First name</label><input id="pxFirst" autocomplete="given-name"></div>
+          </div>
+          <div class="frow">
+            <div class="fg"><label for="pxLast">Last name</label><input id="pxLast" autocomplete="family-name"></div>
+            <div class="fg"><label for="pxDob">Date of birth</label><input id="pxDob" type="date"></div>
+          </div>
+          <div class="frow">
+            <div class="fg"><label for="pxEmail">Email address</label><input id="pxEmail" type="email" autocomplete="email">
+              <div class="hint">Your booking confirmation and boarding pass are sent here.</div></div>
+            <div class="fg"><label for="pxPhone">Mobile number</label><input id="pxPhone" type="tel" placeholder="+971 50 000 0000" autocomplete="tel"></div>
+          </div>
+          <div class="frow">
+            <div class="fg"><label for="pxNat">Nationality</label><input id="pxNat" placeholder="United Arab Emirates"></div>
+            <div class="fg"><label for="pxSky">Skywards number <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input id="pxSky" placeholder="EK000000000"></div>
+          </div>
+          <button class="bk-go" type="submit">Continue to payment</button>
+        </form>
+      </div>
+
+      <!-- STEP 4: PAYMENT -->
+      <div class="bk-pane" id="panePay" style="display:none">
+        <h2>Payment</h2>
+        <p class="lede">This is a demo site. No card is charged and no data is stored.</p>
+        <div class="securenote">&#128274; <span>Demo checkout &mdash; do not enter real card details.</span></div>
+        <form id="payForm" novalidate>
+          <div class="fg" style="margin-bottom:15px"><label for="pyName">Name on card</label><input id="pyName"></div>
+          <div class="fg" style="margin-bottom:15px"><label for="pyNum">Card number</label><input id="pyNum" placeholder="4242 4242 4242 4242" inputmode="numeric"></div>
+          <div class="frow">
+            <div class="fg"><label for="pyExp">Expiry</label><input id="pyExp" placeholder="MM/YY" inputmode="numeric"></div>
+            <div class="fg"><label for="pyCvc">Security code</label><input id="pyCvc" placeholder="123" inputmode="numeric"></div>
+          </div>
+          <button class="bk-go" type="submit" id="payBtn">Pay <span id="payAmt"></span></button>
+        </form>
+      </div>
+
+      <!-- STEP 5: CONFIRMATION -->
+      <div class="bk-pane" id="paneDone" style="display:none">
+        <div class="conf">
+          <div class="conf-ic">&#10003;</div>
+          <h2 id="confTitle">Booking confirmed</h2>
+          <p class="lede" id="confSub" style="margin-bottom:0"></p>
+          <div class="pnr">Booking reference<b id="confPnr"></b></div>
+        </div>
+        <div class="conf-grid" id="confGrid"></div>
+        <button class="bk-go" id="confDone" style="margin-top:24px">Back to flydubai.com</button>
+      </div>
+    </div>
+
+    <!-- summary rail -->
+    <aside class="sum">
+      <div class="sum-h">Trip summary</div>
+      <div class="sum-b">
+        <div class="sum-fl"><b id="sumRoute">&nbsp;</b><span id="sumFlight">&nbsp;</span><span id="sumWhen">&nbsp;</span></div>
+        <div id="sumLines"></div>
+        <div class="sum-row tot"><span>Total</span><span id="sumTotal">AED 0</span></div>
+        <div class="sum-miles" id="sumMiles"></div>
+      </div>
+    </aside>
+  </div>
+</div>
 
 <div class="toast" id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
 
@@ -825,11 +1060,347 @@ function renderFlights(route){
           flightNumber:f.no, originAirport:o, destinationAirport:d,
           departureDate:state.dep, cabinClass:cabin, fareAED:parseInt(amt,10)
         });
-        toast(cabin+' fare selected on '+f.no+' — continue to passenger details.');
+        openBooking(f, cabin, parseInt(amt,10));
       };
     });
     list.appendChild(el);
   });
+}
+
+/* ===================== BOOKING FUNNEL ==============================================
+   Steps mirror a real airline flow so each one emits a distinct trackView URI
+   (/booking/seats, /booking/extras, ...). A CIJ "Website visited" trigger can then
+   match an individual step, and BookingAbandoned carries which step was reached -
+   dropping at seat selection and dropping at payment are very different signals.
+
+   Extras use the exact 7 values of the Dataverse ANC_TYPE option set so the demo
+   data model, segments and measures line up with what the site emits.
+=================================================================================== */
+var BK_STEPS=[
+  {k:'seats',  label:'Seat',      pane:'paneSeats',  uri:'/booking/seats',    title:'Seat selection'},
+  {k:'extras', label:'Extras',    pane:'paneExtras', uri:'/booking/extras',   title:'Extras & ancillaries'},
+  {k:'pax',    label:'Passenger', pane:'panePax',    uri:'/booking/passenger',title:'Passenger details'},
+  {k:'pay',    label:'Payment',   pane:'panePay',    uri:'/booking/payment',  title:'Payment'},
+  {k:'done',   label:'Confirmed', pane:'paneDone',   uri:'/booking/confirmation',title:'Booking confirmed'}
+];
+
+/* matches Dataverse ANC_TYPE (723720180-186) */
+var BK_EXTRAS=[
+  {k:'baggage',  code:723720180, ic:'\uD83E\uDDF3', name:'Extra baggage',     desc:'Add 10 kg to your checked allowance.',        price:145},
+  {k:'meal',     code:723720182, ic:'\uD83C\uDF7D',  name:'Pre-order meal',    desc:'Choose your main course before you fly.',     price:75},
+  {k:'lounge',   code:723720183, ic:'\uD83D\uDECB',  name:'Lounge access',     desc:'Relax in the flydubai lounge at DXB T3.',     price:210},
+  {k:'wifi',     code:723720184, ic:'\uD83D\uDCF6', name:'Onboard Wi-Fi',     desc:'Full-flight streaming-speed internet.',       price:65},
+  {k:'insurance',code:723720185, ic:'\uD83D\uDEE1', name:'Travel insurance',  desc:'Cancellation, medical and baggage cover.',    price:120},
+  {k:'priority', code:723720186, ic:'\u26A1',       name:'Priority boarding', desc:'Board first and settle in early.',            price:55}
+];
+
+var bk={open:false,step:0,flight:null,cabin:'',fare:0,seat:null,seatFee:0,extras:{},pax:{},pnr:null};
+
+function bkEl(id){ return document.getElementById(id); }
+function bkMoney(n){ return 'AED '+Number(n||0).toLocaleString(); }
+
+function bkTotal(){
+  var t=bk.fare+bk.seatFee;
+  for(var k in bk.extras) if(bk.extras[k]) t+=bk.extras[k].price;
+  return t;
+}
+function bkMilesEarned(){
+  var base=Math.round(bkTotal()*2.4);
+  var prof=bkActiveProfile();
+  var mult=prof?({Gold:2,Silver:1.5,Blue:1.25}[prof.tier]||1):1;
+  return Math.round(base*mult);
+}
+function bkActiveProfile(){
+  var cid=readCookie(AUTH_COOKIE); if(!cid) return null;
+  for(var h in FDB_PROFILES) if(FDB_PROFILES[h].id===cid) return FDB_PROFILES[h];
+  return null;
+}
+
+function openBooking(flight,cabin,fare){
+  bk.open=true; bk.step=0; bk.flight=flight; bk.cabin=cabin; bk.fare=fare;
+  bk.seat=null; bk.seatFee=0; bk.extras={}; bk.pax={}; bk.pnr=null;
+  var oc=FDB_CITY[state.origin]||state.origin, dc=FDB_CITY[state.dest]||state.dest;
+  bkEl('bkRouteSub').textContent=oc+' \u2192 '+dc;
+  bkEl('bkRouteMain').textContent=flight.no+' \u00b7 '+cabin+' \u00b7 '+fmtLong(new Date(state.dep+'T00:00:00'));
+  bkEl('sumRoute').textContent=state.origin+' \u2192 '+state.dest;
+  bkEl('sumFlight').textContent=flight.no+' \u00b7 '+flight.dep+'\u2013'+flight.arr+' \u00b7 '+flight.dur;
+  bkEl('sumWhen').textContent=fmtLong(new Date(state.dep+'T00:00:00'));
+  buildSeatMaps(); buildExtras(); bkSummary();
+  bkEl('bkFlow').classList.add('show');
+  document.body.style.overflow='hidden';
+  track('BookingStarted','booking',{flightNumber:flight.no,cabinClass:cabin,fareAED:fare,
+    originAirport:state.origin,destinationAirport:state.dest,departureDate:state.dep});
+  bkGoto(0);
+}
+
+function closeBooking(reason){
+  if(!bk.open) return;
+  var st=BK_STEPS[bk.step];
+  if(st.k!=='done'){
+    track('BookingAbandoned','booking',{step:st.k,stepLabel:st.label,stepIndex:bk.step+1,
+      flightNumber:bk.flight?bk.flight.no:'',cabinClass:bk.cabin,
+      originAirport:state.origin,destinationAirport:state.dest,
+      runningTotalAED:bkTotal(),seatSelected:bk.seat||'',reason:reason||'closed'});
+    trackPage(location.origin+location.pathname+'?stage=booking_abandoned&step='+st.k,
+      'Booking abandoned at '+st.label,'booking',{step:st.k});
+    try{
+      localStorage.setItem('fdb_pending',JSON.stringify({
+        originAirport:state.origin,destinationAirport:state.dest,
+        destCity:(FDB_CITY[state.dest]||''),departureDate:state.dep,
+        cabinClass:bk.cabin,lowestFareAED:bk.fare,bookingStep:st.k,ts:Date.now()}));
+    }catch(e){}
+  }
+  bk.open=false;
+  bkEl('bkFlow').classList.remove('show');
+  document.body.style.overflow='';
+}
+
+function bkGoto(i){
+  bk.step=i;
+  var st=BK_STEPS[i];
+  BK_STEPS.forEach(function(x){ bkEl(x.pane).style.display='none'; });
+  bkEl(st.pane).style.display='';
+  /* stepper */
+  var sw=bkEl('bkSteps'); sw.innerHTML='';
+  BK_STEPS.forEach(function(x,n){
+    var d=document.createElement('div');
+    d.className='step'+(n===i?' on':'')+(n<i?' done':'');
+    d.innerHTML='<i>'+(n<i?'\u2713':(n+1))+'</i>'+x.label;
+    sw.appendChild(d);
+  });
+  bkEl('bkBack').style.visibility=(i===0||st.k==='done')?'hidden':'visible';
+  bkEl('bkFlow').scrollTop=0;
+  bkSummary();
+  trackPage(location.origin+location.pathname+'?stage=booking&step='+st.k,
+    'flydubai \u2014 '+st.title,'booking',
+    {step:st.k,stepIndex:i+1,originAirport:state.origin,destinationAirport:state.dest,
+     cabinClass:bk.cabin,runningTotalAED:bkTotal()});
+  track(st.title.replace(/[^A-Za-z]/g,'')+'Viewed','booking',{step:st.k,stepIndex:i+1});
+}
+
+/* ---------- seat map ---------- */
+function seatPrice(row,isBiz){
+  if(isBiz) return 0;
+  if(row===7||row===8) return 110;      /* exit rows */
+  if(row<=11) return 65;                /* forward cabin */
+  return 0;
+}
+function buildSeatMaps(){
+  var taken={};
+  /* deterministic per flight so the map does not reshuffle between steps */
+  var seedBase=0, fn=bk.flight?bk.flight.no:'FZ0';
+  for(var i=0;i<fn.length;i++) seedBase+=fn.charCodeAt(i)*(i+1);
+  function rnd(n){ var x=Math.sin(seedBase+n)*10000; return x-Math.floor(x); }
+
+  var bizWrap=bkEl('seatMapBiz'); bizWrap.innerHTML='';
+  var n=0;
+  for(var r=1;r<=3;r++){
+    var row=document.createElement('div'); row.className='seatrow';
+    row.innerHTML='<span class="rn">'+r+'</span>';
+    ['A','C'].forEach(function(L){ row.appendChild(mkSeat(r,L,true,rnd(++n)<0.45)); });
+    var g=document.createElement('span'); g.className='aisle'; row.appendChild(g);
+    ['D','F'].forEach(function(L){ row.appendChild(mkSeat(r,L,true,rnd(++n)<0.45)); });
+    bizWrap.appendChild(row);
+  }
+  var ecoWrap=bkEl('seatMapEco'); ecoWrap.innerHTML='';
+  for(var r2=7;r2<=26;r2++){
+    if(r2===7){ var ex=document.createElement('div'); ex.className='exitlbl';
+      ex.innerHTML='<span>\u25C0 EXIT</span><span>EXIT \u25B6</span>'; ecoWrap.appendChild(ex); }
+    var row2=document.createElement('div'); row2.className='seatrow';
+    row2.innerHTML='<span class="rn">'+r2+'</span>';
+    ['A','B','C'].forEach(function(L){ row2.appendChild(mkSeat(r2,L,false,rnd(++n)<0.38)); });
+    var g2=document.createElement('span'); g2.className='aisle'; row2.appendChild(g2);
+    ['D','E','F'].forEach(function(L){ row2.appendChild(mkSeat(r2,L,false,rnd(++n)<0.38)); });
+    ecoWrap.appendChild(row2);
+  }
+  var isBiz=(bk.cabin==='Business');
+  bkEl('seatLede').textContent = isBiz
+    ? 'Your Business fare includes complimentary seat selection in the forward cabin.'
+    : 'Standard seats are complimentary. Extra-legroom and forward seats carry a small fee.';
+}
+function mkSeat(row,letter,isBiz,isTaken){
+  var b=document.createElement('button');
+  b.type='button';
+  var id=row+letter, fee=seatPrice(row,isBiz);
+  var cabinLocked = isBiz && bk.cabin!=='Business';
+  b.className='seat'+(isBiz?' biz':'')+(fee>0&&!isBiz?' prem':'')+((isTaken||cabinLocked)?' x':'');
+  b.textContent=id;
+  b.title = (isTaken?'Occupied':(cabinLocked?'Business cabin \u2014 not included in your fare':(fee>0?bkMoney(fee):'Complimentary')));
+  if(isTaken||cabinLocked){ b.disabled=true; return b; }
+  b.onclick=function(){
+    document.querySelectorAll('.seat.on').forEach(function(x){x.classList.remove('on')});
+    b.classList.add('on');
+    bk.seat=id; bk.seatFee=fee;
+    bkSummary();
+    track('SeatSelected','booking',{seat:id,seatFeeAED:fee,cabinClass:bk.cabin,
+      extraLegroom:(fee>=110),flightNumber:bk.flight?bk.flight.no:''});
+    toast('Seat '+id+' selected'+(fee>0?(' \u00b7 '+bkMoney(fee)):' \u00b7 complimentary'));
+  };
+  return b;
+}
+
+/* ---------- extras ---------- */
+function buildExtras(){
+  var w=bkEl('extrasList'); w.innerHTML='';
+  BK_EXTRAS.forEach(function(x){
+    var d=document.createElement('div'); d.className='ex';
+    d.innerHTML='<div class="ex-ic">'+x.ic+'</div>'+
+      '<div class="ex-tx"><b>'+x.name+'</b><span>'+x.desc+'</span></div>'+
+      '<div class="ex-pr"><b>'+bkMoney(x.price)+'</b><button type="button">Add</button></div>';
+    var btn=d.querySelector('button');
+    btn.onclick=function(){
+      if(bk.extras[x.k]){
+        delete bk.extras[x.k]; d.classList.remove('on'); btn.textContent='Add';
+        track('ExtraRemoved','booking',{ancillaryType:x.name,ancillaryCode:x.code,amountAED:x.price});
+      }else{
+        bk.extras[x.k]=x; d.classList.add('on'); btn.textContent='Added \u2713';
+        track('ExtraAdded','booking',{ancillaryType:x.name,ancillaryCode:x.code,amountAED:x.price,
+          cabinClass:bk.cabin,flightNumber:bk.flight?bk.flight.no:''});
+      }
+      bkSummary();
+    };
+    w.appendChild(d);
+  });
+}
+
+/* ---------- summary rail ---------- */
+function bkSummary(){
+  var w=bkEl('sumLines'); w.innerHTML='';
+  function line(l,v){ var d=document.createElement('div'); d.className='sum-row';
+    d.innerHTML='<span>'+l+'</span><span>'+v+'</span>'; w.appendChild(d); }
+  line(bk.cabin+' fare',bkMoney(bk.fare));
+  if(bk.seat) line('Seat '+bk.seat,bk.seatFee>0?bkMoney(bk.seatFee):'Included');
+  for(var k in bk.extras) line(bk.extras[k].name,bkMoney(bk.extras[k].price));
+  bkEl('sumTotal').textContent=bkMoney(bkTotal());
+  bkEl('payAmt').textContent=bkMoney(bkTotal());
+  var prof=bkActiveProfile();
+  bkEl('sumMiles').innerHTML='You will earn <b>'+bkMilesEarned().toLocaleString()+'</b> Skywards Miles'+
+    (prof?(' at '+prof.tier+' rate'):'')+'.';
+}
+
+/* ---------- passenger prefill (personalization payoff) ---------- */
+function prefillPax(){
+  var prof=bkActiveProfile();
+  var box=bkEl('paxPrefill');
+  if(!prof){ box.style.display='none'; return; }
+  bkEl('pxFirst').value=prof.fn||'';
+  bkEl('pxSky').value='EK'+String(prof.id).replace(/[^0-9]/g,'').slice(0,9).padEnd(9,'0');
+  /* email is deliberately NOT prefilled: only SHA-256 hashes ship in this page,
+     never plaintext addresses. The visitor re-types it, which is also the
+     realistic identification moment for an unrecognised user. */
+  box.style.display='';
+  box.innerHTML='\u2713 Prefilled from your Skywards profile \u2014 '+prof.tier+
+    ' member with '+Number(prof.miles||0).toLocaleString()+' miles.';
+  track('PassengerPrefilled','booking',{recognisedAs:prof.fn,skywardsTier:prof.tier});
+}
+
+/* ---------- wiring ---------- */
+(function(){
+  bkEl('bkClose').onclick=function(){ closeBooking('close_button'); };
+  bkEl('bkBack').onclick=function(){ if(bk.step>0) bkGoto(bk.step-1); };
+
+  bkEl('seatNext').onclick=function(){
+    if(!bk.seat){ toast('Pick a seat, or skip to have one assigned at check-in.'); return; }
+    bkGoto(1);
+  };
+  bkEl('seatSkip').onclick=function(){
+    bk.seat=null; bk.seatFee=0;
+    document.querySelectorAll('.seat.on').forEach(function(x){x.classList.remove('on')});
+    track('SeatSelectionSkipped','booking',{});
+    bkSummary(); bkGoto(1);
+  };
+
+  bkEl('extrasNext').onclick=function(){
+    var picked=Object.keys(bk.extras);
+    track('ExtrasCompleted','booking',{extrasCount:picked.length,
+      extrasList:picked.map(function(k){return bk.extras[k].name}).join(', '),
+      extrasValueAED:picked.reduce(function(a,k){return a+bk.extras[k].price},0)});
+    prefillPax(); bkGoto(2);
+  };
+  bkEl('extrasSkip').onclick=function(){
+    track('ExtrasSkipped','booking',{});
+    prefillPax(); bkGoto(2);
+  };
+
+  bkEl('paxForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var req=['pxFirst','pxLast','pxEmail'], bad=false;
+    req.forEach(function(id){
+      var el=bkEl(id), v=el.value.trim();
+      var ok = v.length>0 && (id!=='pxEmail' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v));
+      el.classList.toggle('err',!ok); if(!ok) bad=true;
+    });
+    if(bad){ toast('Please complete the highlighted fields.'); return; }
+    bk.pax={title:bkEl('pxTitle').value,first:bkEl('pxFirst').value.trim(),
+      last:bkEl('pxLast').value.trim(),email:bkEl('pxEmail').value.trim(),
+      phone:bkEl('pxPhone').value.trim(),nat:bkEl('pxNat').value.trim(),sky:bkEl('pxSky').value.trim()};
+
+    /* the realistic identification moment: a real email, given willingly */
+    idHash(bk.pax.email).then(function(h){
+      var rec=(h&&FDB_ID_MAP[h])||null;
+      if(rec && !idState.identified) identify(rec[0],rec[1]);
+      track('PassengerDetailsCompleted','booking',{
+        hasSkywardsNumber:!!bk.pax.sky,matchedKnownCustomer:!!rec,
+        skywardsTier:rec?rec[2]:'',flightNumber:bk.flight?bk.flight.no:''});
+      bkGoto(3);
+    });
+  });
+
+  bkEl('payForm').addEventListener('submit',function(e){
+    e.preventDefault();
+    var req=['pyName','pyNum','pyExp','pyCvc'], bad=false;
+    req.forEach(function(id){ var el=bkEl(id); var ok=el.value.trim().length>0;
+      el.classList.toggle('err',!ok); if(!ok) bad=true; });
+    if(bad){ toast('Please complete all payment fields.'); return; }
+    var btn=bkEl('payBtn'); btn.disabled=true; btn.textContent='Processing\u2026';
+    setTimeout(function(){
+      btn.disabled=false; btn.innerHTML='Pay <span id="payAmt">'+bkMoney(bkTotal())+'</span>';
+      completeBooking();
+    },1400);
+  });
+
+  bkEl('confDone').onclick=function(){
+    bk.open=false;
+    bkEl('bkFlow').classList.remove('show');
+    document.body.style.overflow='';
+  };
+})();
+
+function completeBooking(){
+  var A='ABCDEFGHJKLMNPQRSTUVWXYZ', pnr='';
+  for(var i=0;i<6;i++) pnr+=A.charAt(Math.floor(Math.random()*A.length));
+  bk.pnr=pnr;
+  var picked=Object.keys(bk.extras).map(function(k){return bk.extras[k].name});
+  bkEl('confPnr').textContent=pnr;
+  bkEl('confTitle').textContent='Booking confirmed, '+(bk.pax.first||'traveller')+'!';
+  bkEl('confSub').textContent='We have emailed your itinerary to '+bk.pax.email+'.';
+  var g=bkEl('confGrid'); g.innerHTML='';
+  function cell(l,v){ var d=document.createElement('div'); d.className='conf-cell';
+    d.innerHTML='<span>'+l+'</span><b>'+v+'</b>'; g.appendChild(d); }
+  cell('Passenger',(bk.pax.title||'')+' '+(bk.pax.first||'')+' '+(bk.pax.last||''));
+  cell('Flight',(bk.flight?bk.flight.no:'')+' \u00b7 '+bk.cabin);
+  cell('Route',(FDB_CITY[state.origin]||state.origin)+' \u2192 '+(FDB_CITY[state.dest]||state.dest));
+  cell('Departs',fmtLong(new Date(state.dep+'T00:00:00'))+' \u00b7 '+(bk.flight?bk.flight.dep:''));
+  cell('Seat',bk.seat?bk.seat:'Assigned at check-in');
+  cell('Extras',picked.length?picked.join(', '):'None');
+  cell('Total paid',bkMoney(bkTotal()));
+  cell('Miles earned',bkMilesEarned().toLocaleString()+' Skywards Miles');
+
+  try{ localStorage.removeItem('fdb_pending'); }catch(e){}
+  abandonFired=true;   /* a completed booking must not also report as abandoned */
+
+  track('BookingCompleted','booking',{
+    bookingReference:pnr,flightNumber:bk.flight?bk.flight.no:'',cabinClass:bk.cabin,
+    originAirport:state.origin,destinationAirport:state.dest,departureDate:state.dep,
+    seat:bk.seat||'',seatFeeAED:bk.seatFee,
+    extrasCount:picked.length,extrasList:picked.join(', '),
+    fareAED:bk.fare,totalAED:bkTotal(),currency:'AED',milesEarned:bkMilesEarned(),
+    matchedKnownCustomer:idState.identified});
+  trackPage(location.origin+location.pathname+'?stage=booking_confirmed&pnr='+pnr,
+    'Booking confirmed \u2014 '+state.origin+' to '+state.dest,'booking',
+    {bookingReference:pnr,totalAED:bkTotal()});
+  bkGoto(4);
+  toast('Booking '+pnr+' confirmed \u00b7 '+bkMoney(bkTotal()));
 }
 
 /* ================= RETURN-VISIT PERSONALIZATION =====================================
@@ -1141,6 +1712,12 @@ function hideIdModal(){ document.getElementById('idModal').classList.remove('sho
 var abandonFired=false;
 function fireAbandon(reason){
   if(abandonFired) return;
+  /* if the booking funnel is open it reports its own, richer BookingAbandoned
+     with the exact step reached - do not also emit the generic search abandon. */
+  if(typeof bk!=='undefined' && bk.open){
+    if(reason==='exit_intent'||reason==='idle_90s') return;
+    closeBooking(reason); return;
+  }
   if(!document.getElementById('results').classList.contains('show')) return;
   abandonFired=true;
   var fields = state.searchFields || {};
