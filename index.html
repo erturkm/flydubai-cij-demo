@@ -1718,6 +1718,35 @@ function hideIdModal(){ document.getElementById('idModal').classList.remove('sho
         identify(authId,rec[1]);
         props.skywardsTier=rec[2];
         props.skywardsMiles=rec[3];
+
+        /* The abandon VIEW already went out before this modal appeared, so
+           it carried no authId and a contact-targeted journey can never
+           resolve it. Re-emit the same URL now that setUser has bound the
+           cookie to a contact - this second view is the one CIJ's
+           "Marketing Website Visited" trigger can actually act on.
+           Deferred a tick so setUser is applied to the outgoing signal. */
+        setTimeout(function(){
+          var o2=idState.payload||{};
+          var org=o2.originAirport||state.origin,
+              dst=o2.destinationAirport||state.dest,
+              dep=o2.departureDate||state.dep,
+              cab=o2.cabinClass||bk.cabin||'Economy',
+              inFunnel=!!o2.step;
+          trackPage(location.origin+location.pathname+
+            '?from='+encodeURIComponent(org)+'&to='+encodeURIComponent(dst)+
+            '&depart='+encodeURIComponent(dep)+'&cabin='+encodeURIComponent(cab)+
+            '&stage='+(inFunnel?'booking_abandoned':'abandoned')+
+            (inFunnel?('&step='+o2.step):'')+'&identified=1',
+            (inFunnel?('Booking abandoned at '+(o2.stepLabel||o2.step)+' \u2014 '):
+                      'Flight search abandoned \u2014 ')+org+' to '+dst,
+            inFunnel?'booking':'results',
+            Object.keys(props).reduce(function(a,k){a[k]=props[k];return a;},
+              {identifiedAfterAbandon:true,
+               seatSelected:o2.seatSelected||'',
+               extrasCount:o2.extrasCount||0,
+               step:o2.step||'',stepLabel:o2.stepLabel||''}));
+          console.log('[CIJ] re-emitted identified abandon view for',authId);
+        },400);
       }
       track('FareAlertSignup','results',props);
 
