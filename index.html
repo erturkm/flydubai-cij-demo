@@ -431,7 +431,7 @@ footer{background:var(--navy-dk);color:#A9BDD8;padding:46px 0 26px;font-size:13p
     <div class="cta-strip">
       <div>
         <h3>Not ready to book?</h3>
-        <p>Save this search and we'll alert you if the Dubai–London fare drops.</p>
+        <p id="saveSearchSub">Save this search and we'll alert you if the fare drops.</p>
       </div>
       <button class="btn-ghost" onclick="track('SaveSearch_Click','results');toast('Search saved — we\'ll email you if the fare drops.')">Save this search</button>
     </div>
@@ -752,6 +752,7 @@ function doSearch(e){
 
   renderDates(dd, route);
   renderFlights(route);
+  updateSaveSearchCopy();
 
   var res=document.getElementById('results');
   res.classList.add('show');
@@ -763,6 +764,13 @@ function quickSearch(code, city){
   document.getElementById('dest').value=code;
   track('Destination_Card_Click','destinations',{destinationAirport:code,destinationCity:city});
   doSearch();
+}
+
+function updateSaveSearchCopy(){
+  var el=document.getElementById('saveSearchSub');
+  if(!el) return;
+  var oc=FDB_CITY[state.origin]||state.origin, dc=FDB_CITY[state.dest]||state.dest;
+  el.textContent="Save this search and we'll alert you if the "+oc+"\u2013"+dc+" fare drops.";
 }
 
 function renderDates(center, route){
@@ -872,7 +880,8 @@ function destImage(iata){
   });
 }
 
-function fmtDate(d){
+/* renamed from fmtDate to avoid clobbering the site's Date-based fmtDate() */
+function fmtISODate(d){
   if(!d) return '';
   var p=String(d).split('-'); if(p.length<3) return d;
   var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -902,7 +911,7 @@ function applyPersonalization(p,source){
     document.getElementById('heroSub').textContent=
       (pending && pending.destinationAirport)
         ? 'You were looking at '+(pending.originAirport||'DXB')+' \u2192 '+pending.destinationAirport+'. Pick up where you left off.'
-        : 'Your most-flown route \u2014 '+p.trips+' trips, last flown '+fmtDate(p.last)+'.';
+        : 'Your most-flown route \u2014 '+p.trips+' trips, last flown '+fmtISODate(p.last)+'.';
   }
   destImage(heroDest).then(function(url){
     if(!url) return;
@@ -921,7 +930,7 @@ function applyPersonalization(p,source){
     var pr=p.route.split('-');
     rt={o:pr[0],d:pr[1],
         title:'Book '+p.route.replace('-',' \u2192 ')+' again',
-        sub:'Your most-flown route \u00b7 '+p.trips+' trips \u00b7 last flown '+fmtDate(p.last)};
+        sub:'Your most-flown route \u00b7 '+p.trips+' trips \u00b7 last flown '+fmtISODate(p.last)};
   }
   if(rt){
     document.getElementById('resumeTitle').textContent=rt.title;
