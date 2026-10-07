@@ -85,7 +85,42 @@ nav.main a:hover,nav.main a.on{border-color:var(--orange);color:#fff}
              radial-gradient(ellipse 50% 60% at 12% 82%,rgba(21,101,168,.55),transparent 65%)}
 .hero::after{content:"";position:absolute;right:-60px;bottom:-40px;width:620px;height:360px;opacity:.14;
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 340'><path d='M70 300 L70 120 L130 120 L170 220 L250 220 L205 90 L265 90 L380 215 L500 205 Q560 200 560 225 Q560 250 500 248 L360 252 L250 300 Z' fill='white'/></svg>") no-repeat center/contain}
+.hero-photo{position:absolute;inset:0;background-size:cover;background-position:center 38%;
+  opacity:0;transition:opacity .9s ease;z-index:0}
+.hero.personalised .hero-photo{opacity:1}
+.hero.personalised::before{background:linear-gradient(100deg,rgba(0,22,48,.90) 0%,rgba(0,32,70,.72) 42%,rgba(0,40,88,.30) 72%,rgba(0,40,88,.10) 100%);z-index:1}
+.hero.personalised::after{opacity:.07;z-index:1}
 .hero-inner{position:relative;z-index:2;width:100%}
+
+/* welcome-back ribbon */
+.wb{display:inline-flex;align-items:center;gap:11px;background:rgba(255,255,255,.13);
+  border:1px solid rgba(255,255,255,.26);backdrop-filter:blur(6px);color:#fff;
+  padding:8px 16px 8px 9px;border-radius:40px;font-size:13px;margin-bottom:17px;
+  opacity:0;transform:translateY(-8px);transition:.45s}
+.wb.show{opacity:1;transform:none}
+.wb-av{width:27px;height:27px;border-radius:50%;background:var(--orange);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0}
+.wb-tier{background:rgba(245,130,32,.9);padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.wb-x{background:0;border:0;color:rgba(255,255,255,.62);cursor:pointer;font-size:12px;
+  text-decoration:underline;font-family:inherit;padding:0 2px 0 5px}
+.wb-x:hover{color:#fff}
+
+/* resume-booking card */
+.resume{position:relative;z-index:2;margin-top:20px;background:rgba(255,255,255,.97);
+  border-radius:12px;padding:17px 19px;display:none;align-items:center;gap:17px;
+  box-shadow:var(--shadow-lg);max-width:620px;border-left:4px solid var(--orange)}
+.resume.show{display:flex;animation:resumeIn .5s ease}
+@keyframes resumeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.resume-ic{width:42px;height:42px;border-radius:10px;background:#FFF1E3;color:var(--orange);
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.resume-tx{flex:1;min-width:0}
+.resume-tx b{display:block;font-size:14.5px;color:var(--navy);margin-bottom:3px}
+.resume-tx span{font-size:12.5px;color:var(--muted);display:block;line-height:1.45}
+.resume-go{background:var(--orange);color:#fff;border:0;padding:11px 19px;border-radius:7px;
+  font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:.15s}
+.resume-go:hover{background:var(--orange-dk)}
+.resume-x{background:0;border:0;color:var(--muted);font-size:19px;cursor:pointer;padding:0 2px;font-family:inherit;line-height:1}
+@media(max-width:720px){.resume{flex-wrap:wrap}.resume-go{width:100%}}
 .hero h1{font-size:40px;line-height:1.15;font-weight:700;color:#fff;max-width:620px;letter-spacing:-.6px}
 .hero h1 span{color:var(--orange)}
 .hero p.sub{color:#CBDBEF;font-size:16px;margin-top:12px;max-width:560px}
@@ -298,10 +333,24 @@ footer{background:var(--navy-dk);color:#A9BDD8;padding:46px 0 26px;font-size:13p
 </header>
 
 <!-- ============ HERO + SEARCH ============ -->
-<div class="hero">
+<div class="hero" id="hero">
+  <div class="hero-photo" id="heroPhoto"></div>
   <div class="wrap hero-inner">
-    <h1>Dubai to London, <span>non-stop daily.</span></h1>
-    <p class="sub">Search live fares across 125+ destinations. Business Class lie-flat seats, 2× Skywards miles this month.</p>
+    <div class="wb" id="welcomeBack">
+      <span class="wb-av" id="wbAv"></span>
+      <span id="wbTxt"></span>
+      <span class="wb-tier" id="wbTier"></span>
+      <button class="wb-x" id="wbNot">Not you?</button>
+    </div>
+    <h1 id="heroH1">Dubai to London, <span>non-stop daily.</span></h1>
+    <p class="sub" id="heroSub">Search live fares across 125+ destinations. Business Class lie-flat seats, 2× Skywards miles this month.</p>
+
+    <div class="resume" id="resumeCard">
+      <div class="resume-ic">&#9992;</div>
+      <div class="resume-tx"><b id="resumeTitle"></b><span id="resumeSub"></span></div>
+      <button class="resume-go" id="resumeGo">Resume booking</button>
+      <button class="resume-x" id="resumeX" aria-label="Dismiss">&times;</button>
+    </div>
 
     <div class="searchcard">
       <div class="triptabs">
@@ -775,6 +824,169 @@ function renderFlights(route){
   });
 }
 
+/* ================= RETURN-VISIT PERSONALIZATION =====================================
+   Layered by design. The UI only ever talks to fetchProfile(contactId), so the data
+   source can be swapped without touching any rendering code:
+
+     PROFILE_SOURCE='local'  -> embedded cache below (demo; zero infra, zero latency)
+     PROFILE_SOURCE='api'    -> PROFILE_API endpoint (production; Azure Function that
+                                queries Dataverse server-side with its own credential)
+
+   Note: MSCI.getSegmentsInfo() exists in the SDK but its endpoint
+   (eus.personalizationapi.pipe.int.trafficmanager.net) is null-routed to 255.255.255.255,
+   i.e. an unreleased internal service. CI-Data tracking is write-only from the browser,
+   so personalization content must come from one of the two sources above.
+==================================================================================== */
+var FDB_CITY={"ADD":"Addis Ababa","ALA":"Almaty","ALY":"Alexandria","AMM":"Amman","AUH":"Abu Dhabi","AYT":"Antalya","BAH":"Bahrain","BEG":"Belgrade","BEY":"Beirut","BGW":"Baghdad","BKK":"Bangkok","BOM":"Mumbai","BSR":"Basra","BTS":"Bratislava","CAI":"Cairo","CMB":"Colombo","COK":"Kochi","CTA":"Catania","DAC":"Dhaka","DEL":"Delhi","DMM":"Dammam","DOH":"Doha","DXB":"Dubai","EBL":"Erbil","ESB":"Ankara","EVN":"Yerevan","GYD":"Baku","HEL":"Helsinki","HGA":"Hargeisa","HYD":"Hyderabad","ISB":"Islamabad","IST":"Istanbul","JED":"Jeddah","JIB":"Djibouti","KBV":"Krabi","KHI":"Karachi","KRK":"Krakow","KTM":"Kathmandu","KWI":"Kuwait City","LGW":"London","LHE":"Lahore","MAA":"Chennai","MAD":"Madrid","MCT":"Muscat","MLE":"Male","NAP":"Naples","NBO":"Nairobi","PRG":"Prague","RUH":"Riyadh","SAW":"Istanbul Sabiha","SHJ":"Sharjah","SLL":"Salalah","SOF":"Sofia","TAS":"Tashkent","TBS":"Tbilisi","ZAG":"Zagreb","ZNZ":"Zanzibar"};
+var PROFILE_SOURCE='local';
+var PROFILE_API='';            /* e.g. https://<func>.azurewebsites.net/api/profile */
+var DEST_IMG_BASE='img/dest/';
+var AUTH_COOKIE='msdynci_userauthid';
+
+var FDB_PROFILES={"0201ff71dccd4e8e":{"city":"Islamabad","country":"Pakistan","dest":"ISB","fn":"Michael","id":"b4d3f73f-5ac1-f111-a05a-7c1e52847c61","last":"2026-07-09","lastAmt":3442,"lastDep":"2026-12-23","lastRoute":"DXB-MLE","miles":52000,"route":"DXB-ISB","tier":"Silver","trips":3},"02c98cadd1c59b6f":{"city":"Erbil","country":"Iraq","dest":"EBL","fn":"Layla","id":"8b68d939-5ac1-f111-a05a-7c1e52847c61","last":"2026-09-14","lastAmt":3880,"lastDep":"2026-12-07","lastRoute":"DXB-SOF","miles":41000,"route":"DXB-EBL","tier":"Silver","trips":3},"0de834f77c271ef6":{"city":"Dhaka","country":"Bangladesh","dest":"DAC","fn":"Hassan","id":"2ce37566-73c1-f111-a05a-7c1e52847c61","last":"2025-02-26","lastAmt":2032,"lastDep":"2026-10-26","lastRoute":"DXB-TBS","miles":27468,"route":"DXB-DAC","tier":"Gold","trips":4},"144c444eeeb2c8c4":{"city":"Bahrain","country":"Bahrain","dest":"BAH","fn":"Ethan","id":"b5c1c86c-73c1-f111-a05a-7c1e52847c61","last":"2025-12-13","lastAmt":2126,"lastDep":"2025-12-13","lastRoute":"DXB-BAH","miles":32965,"route":"DXB-BAH","tier":"Gold","trips":2},"18355f570b33d6c1":{"city":"Prague","country":"Czechia","dest":"PRG","fn":"Jamie","id":"254ed2e0-db6a-f111-ab0e-7c1e52847c61","last":"2026-08-24","lastAmt":4476,"lastDep":"2026-10-12","lastRoute":"DXB-PRG","miles":171000,"route":"DXB-PRG","tier":"Gold","trips":25},"19ce00b3c070f01a":{"city":"Addis Ababa","country":"Ethiopia","dest":"ADD","fn":"Sofia","id":"f4b35260-73c1-f111-a05a-7c1e52847c61","last":"2026-09-11","lastAmt":3483,"lastDep":"2026-09-11","lastRoute":"DXB-ADD","miles":151156,"route":"DXB-ADD","tier":"Blue","trips":2},"1c85e774039807ec":{"city":"Prague","country":"Czechia","dest":"PRG","fn":"Rajesh","id":"bcc1c86c-73c1-f111-a05a-7c1e52847c61","last":"2026-03-27","lastAmt":4909,"lastDep":"2026-11-29","lastRoute":"DXB-KTM","miles":117558,"route":"DXB-PRG","tier":"Blue","trips":2},"1df4f311b4505958":{"city":"Zagreb","country":"Croatia","dest":"ZAG","fn":"Fatima","id":"14e37566-73c1-f111-a05a-7c1e52847c61","last":"2026-10-04","lastAmt":3852,"lastDep":"2026-12-05","lastRoute":"DXB-ZAG","miles":78064,"route":"DXB-ZAG","tier":"Blue","trips":3},"28d9b144966c5df2":{"city":"Tashkent","country":"Uzbekistan","dest":"TAS","fn":"Grace","id":"317bf245-5ac1-f111-a05a-7c1e52847c61","last":"2025-12-04","lastAmt":7401,"lastDep":"2025-12-04","lastRoute":"DXB-TAS","miles":11000,"route":"DXB-TAS","tier":"Blue","trips":1},"29486052169b24a5":{"city":"Muscat","country":"Oman","dest":"MCT","fn":"Rajesh","id":"fd7af245-5ac1-f111-a05a-7c1e52847c61","last":"2025-11-22","lastAmt":5149,"lastDep":"2026-10-29","lastRoute":"DXB-DAC","miles":68000,"route":"DXB-MCT","tier":"Silver","trips":3},"2d418730d8af4c2c":{"city":"Krakow","country":"Poland","dest":"KRK","fn":"Saeed","id":"76d3f73f-5ac1-f111-a05a-7c1e52847c61","last":"2025-09-18","lastAmt":12185,"lastDep":"2025-12-14","lastRoute":"DXB-ZAG","miles":186000,"route":"DXB-KRK","tier":"Gold","trips":3},"301fe40134b2cc39":{"city":"Sofia","country":"Bulgaria","dest":"SOF","fn":"Elena","id":"1136215a-73c1-f111-a05a-7c1e52847c61","last":"2026-09-26","lastAmt":3876,"lastDep":"2026-09-26","lastRoute":"DXB-SOF","miles":63000,"route":"DXB-SOF","tier":"Silver","trips":11},"31446be1812d42e2":{"city":"Riyadh","country":"Saudi Arabia","dest":"RUH","fn":"Michael","id":"d2c1c86c-73c1-f111-a05a-7c1e52847c61","last":"2025-07-28","lastAmt":3219,"lastDep":"2026-12-17","lastRoute":"DXB-RUH","miles":154686,"route":"DXB-RUH","tier":"Silver","trips":2},"340ccd706fa7630e":{"city":"Amman","country":"Jordan","dest":"AMM","fn":"Qamar","id":"5092e2e6-db6a-f111-ab0e-7c1e52847c61","last":"2026-10-02","lastAmt":6465,"lastDep":"2026-10-02","lastRoute":"DXB-AMM","miles":139000,"route":"DXB-AMM","tier":"Gold","trips":15},"3aae9ba4e3f0f13d":{"city":"Doha","country":"Qatar","dest":"DOH","fn":"Hind","id":"adc1c86c-73c1-f111-a05a-7c1e52847c61","last":"2026-08-18","lastAmt":8784,"lastDep":"2026-12-10","lastRoute":"DXB-ZAG","miles":193200,"route":"DXB-DOH","tier":"Gold","trips":3},"45401e060b0d0d1a":{"city":"Baghdad","country":"Iraq","dest":"BGW","fn":"Arjun","id":"b9e6f14b-5ac1-f111-a05a-7c1e52847c61","last":"2025-08-15","lastAmt":1978,"lastDep":"2026-11-20","lastRoute":"DXB-CAI","miles":142000,"route":"DXB-BGW","tier":"Gold","trips":3},"46058c4eed6eb4d7":{"city":"Abu Dhabi","country":"United Arab Emirates","dest":"AUH","fn":"Khalid","id":"d8c1c86c-73c1-f111-a05a-7c1e52847c61","last":"2026-10-03","lastAmt":945,"lastDep":"2026-11-04","lastRoute":"DXB-AUH","miles":66537,"route":"DXB-AUH","tier":"Gold","trips":5},"530e508d4c7caf4d":{"city":"Chennai","country":"India","dest":"MAA","fn":"Amara","id":"f1cbc572-73c1-f111-a05a-7c1e52847c61","last":"2026-08-11","lastAmt":2981,"lastDep":"2026-11-27","lastRoute":"DXB-SLL","miles":26424,"route":"DXB-MAA","tier":"Blue","trips":2},"583b290304d49c0a":{"city":"Erbil","country":"Iraq","dest":"EBL","fn":"Chloe","id":"0f7bf245-5ac1-f111-a05a-7c1e52847c61","last":"2026-09-30","lastAmt":5919,"lastDep":"2026-10-27","lastRoute":"DXB-AYT","miles":5400,"route":"DXB-EBL","tier":"Blue","trips":3},"597b1cf8e900847b":{"city":"Kathmandu","country":"Nepal","dest":"KTM","fn":"Layla","id":"f9cbc572-73c1-f111-a05a-7c1e52847c61","last":"2026-10-03","lastAmt":22124,"lastDep":"2026-10-03","lastRoute":"DXB-KTM","miles":26975,"route":"DXB-KTM","tier":"Silver","trips":5},"59b65f81e57e0f29":{"city":"Antalya","country":"Turkey","dest":"AYT","fn":"Noura","id":"ab68d939-5ac1-f111-a05a-7c1e52847c61","last":"2024-06-28","lastAmt":7429,"lastDep":"2026-08-26","lastRoute":"DXB-KWI","miles":97000,"route":"DXB-AYT","tier":"Gold","trips":1},"5b794a52268ad3eb":{"city":"Basra","country":"Iraq","dest":"BSR","fn":"Isabella","id":"cae6f14b-5ac1-f111-a05a-7c1e52847c61","last":"2026-08-15","lastAmt":2011,"lastDep":"2026-12-24","lastRoute":"DXB-BSR","miles":4100,"route":"DXB-BSR","tier":"Blue","trips":4},"5c7793fa6c388bc2":{"city":"Krakow","country":"Poland","dest":"KRK","fn":"Hind","id":"87d3f73f-5ac1-f111-a05a-7c1e52847c61","last":"2025-10-31","lastAmt":4637,"lastDep":"2026-12-15","lastRoute":"DXB-NAP","miles":3200,"route":"DXB-KRK","tier":"Blue","trips":2},"5d0e1562ced2a027":{"city":"Krakow","country":"Poland","dest":"KRK","fn":"Hassan","id":"55d3f73f-5ac1-f111-a05a-7c1e52847c61","last":"2025-03-26","lastAmt":1037,"lastDep":"2026-07-14","lastRoute":"DXB-CAI","miles":6500,"route":"DXB-KRK","tier":"Blue","trips":3},"608ee0780315914d":{"city":"Baghdad","country":"Iraq","dest":"BGW","fn":"Fatima","id":"6c68d939-5ac1-f111-a05a-7c1e52847c61","last":"2026-04-07","lastAmt":4019,"lastDep":"2026-11-18","lastRoute":"DXB-BEG","miles":121000,"route":"DXB-BGW","tier":"Gold","trips":4},"62909be095dcd123":{"city":"Kochi","country":"India","dest":"COK","fn":"Michael","id":"1be37566-73c1-f111-a05a-7c1e52847c61","last":"2026-06-24","lastAmt":3980,"lastDep":"2026-11-11","lastRoute":"DXB-COK","miles":74651,"route":"DXB-COK","tier":"Blue","trips":5},"62de9ea14fae8467":{"city":"Catania","country":"Italy","dest":"CTA","fn":"Chloe","id":"21e37566-73c1-f111-a05a-7c1e52847c61","last":"2026-02-16","lastAmt":5641,"lastDep":"2026-12-09","lastRoute":"DXB-TBS","miles":68609,"route":"DXB-CTA","tier":"Blue","trips":2},"6709eded9eedde03":{"city":"Krabi","country":"Thailand","dest":"KBV","fn":"Maryam","id":"44d3f73f-5ac1-f111-a05a-7c1e52847c61","last":"2024-04-06","lastAmt":3851,"lastDep":"2026-10-21","lastRoute":"DXB-KRK","miles":9000,"route":"DXB-KBV","tier":"Blue","trips":1},"699856c4d79aee0d":{"city":"Zanzibar","country":"Tanzania","dest":"ZNZ","fn":"Lucas","id":"3be37566-73c1-f111-a05a-7c1e52847c61","last":"2025-07-17","lastAmt":4948,"lastDep":"2026-10-17","lastRoute":"DXB-ZNZ","miles":46508,"route":"DXB-ZNZ","tier":"Gold","trips":3},"723af14009570652":{"city":"Lahore","country":"Pakistan","dest":"LHE","fn":"Tom","id":"e9cbc572-73c1-f111-a05a-7c1e52847c61","last":"2026-01-21","lastAmt":2460,"lastDep":"2026-08-20","lastRoute":"DXB-HEL","miles":131758,"route":"DXB-LHE","tier":"Silver","trips":3},"76b84f17ab2357bf":{"city":"Prague","country":"Czechia","dest":"PRG","fn":"James","id":"96d3f73f-5ac1-f111-a05a-7c1e52847c61","last":"2026-02-25","lastAmt":2949,"lastDep":"2026-11-01","lastRoute":"DXB-SAW","miles":163000,"route":"DXB-PRG","tier":"Gold","trips":1},"7a438d6bafba05ad":{"city":"Baku","country":"Azerbaijan","dest":"GYD","fn":"Khalid","id":"7b68d939-5ac1-f111-a05a-7c1e52847c61","last":"2026-03-10","lastAmt":2148,"lastDep":"2026-03-10","lastRoute":"DXB-GYD","miles":64000,"route":"DXB-GYD","tier":"Silver","trips":3},"7f334d3509f42597":{"city":"Doha","country":"Qatar","dest":"DOH","fn":"Grace","id":"dec1c86c-73c1-f111-a05a-7c1e52847c61","last":"2026-07-29","lastAmt":965,"lastDep":"2026-07-29","lastRoute":"DXB-DOH","miles":63864,"route":"DXB-DOH","tier":"Blue","trips":4},"808211fd2fe4f76a":{"city":"Zanzibar","country":"Tanzania","dest":"ZNZ","fn":"Omar","id":"25c1de33-5ac1-f111-a05a-7c1e52847c61","last":"2026-10-06","lastAmt":8383,"lastDep":"2026-10-06","lastRoute":"DXB-ZNZ","miles":148000,"route":"DXB-ZNZ","tier":"Gold","trips":2},"8b03cc1a9afaaed0":{"city":"Islamabad","country":"Pakistan","dest":"ISB","fn":"Priya","id":"0ae37566-73c1-f111-a05a-7c1e52847c61","last":"2026-04-12","lastAmt":2434,"lastDep":"2026-12-19","lastRoute":"DXB-DMM","miles":134368,"route":"DXB-ISB","tier":"Gold","trips":3},"8fb02217619ce849":{"city":"Krakow","country":"Poland","dest":"KRK","fn":"Elena","id":"e97af245-5ac1-f111-a05a-7c1e52847c61","last":"2026-08-30","lastAmt":19403,"lastDep":"2026-08-30","lastRoute":"DXB-KRK","miles":104000,"route":"DXB-KRK","tier":"Gold","trips":3},"955e7367a1481e03":{"city":"Cairo","country":"Egypt","dest":"CAI","fn":"Ahmed","id":"1c85490e-dc6a-f111-ab0e-7c1e52847c61","last":"2026-09-15","lastAmt":2285,"lastDep":"2026-09-23","lastRoute":"DXB-IST","miles":128000,"route":"DXB-CAI","tier":"Gold","trips":11},"9b4c13dea133c804":{"city":"Riyadh","country":"Saudi Arabia","dest":"RUH","fn":"Abdullah","id":"06b45260-73c1-f111-a05a-7c1e52847c61","last":"2026-02-10","lastAmt":2155,"lastDep":"2026-11-05","lastRoute":"DXB-DEL","miles":12730,"route":"DXB-RUH","tier":"Silver","trips":3},"a42ac48b7f03be9c":{"city":"Dammam","country":"Saudi Arabia","dest":"DMM","fn":"Isabella","id":"33e37566-73c1-f111-a05a-7c1e52847c61","last":"2026-08-20","lastAmt":4681,"lastDep":"2026-11-17","lastRoute":"DXB-SOF","miles":97846,"route":"DXB-DMM","tier":"Silver","trips":3},"a65f55f77a3066cf":{"city":"Istanbul","country":"Turkey","dest":"IST","fn":"Ercument","id":"028ae278-273d-f011-877b-000d3a4b92e1","last":"2026-09-28","lastAmt":2712,"lastDep":"2026-10-05","lastRoute":"DXB-BEY","miles":201000,"route":"DXB-IST","tier":"Gold","trips":24},"a751162356ff7b3c":{"city":"Baghdad","country":"Iraq","dest":"BGW","fn":"Priya","id":"e3b35260-73c1-f111-a05a-7c1e52847c61","last":"2026-05-23","lastAmt":7894,"lastDep":"2026-05-23","lastRoute":"DXB-BGW","miles":15324,"route":"DXB-BGW","tier":"Blue","trips":3},"af51373ed8a9b25d":{"city":"Muscat","country":"Oman","dest":"MCT","fn":"Aisha","id":"65d3f73f-5ac1-f111-a05a-7c1e52847c61","last":"2025-06-20","lastAmt":767,"lastDep":"2025-06-20","lastRoute":"DXB-MCT","miles":37000,"route":"DXB-MCT","tier":"Silver","trips":2},"b61ecd99456d9316":{"city":"Abu Dhabi","country":"United Arab Emirates","dest":"AUH","fn":"Nikhil","id":"e8abf978-73c1-f111-a05a-7c1e52847c61","last":"2026-06-22","lastAmt":5171,"lastDep":"2026-11-02","lastRoute":"DXB-BOM","miles":32100,"route":"DXB-AUH","tier":"Silver","trips":2},"ba056026901a2175":{"city":"Yerevan","country":"Armenia","dest":"EVN","fn":"Omar","id":"f4abf978-73c1-f111-a05a-7c1e52847c61","last":"2026-10-02","lastAmt":7097,"lastDep":"2026-10-02","lastRoute":"DXB-EVN","miles":115632,"route":"DXB-EVN","tier":"Silver","trips":2},"be4a87d05344c460":{"city":"Nairobi","country":"Kenya","dest":"NBO","fn":"Maryam","id":"e1cbc572-73c1-f111-a05a-7c1e52847c61","last":"2026-10-01","lastAmt":3621,"lastDep":"2026-12-04","lastRoute":"DXB-CMB","miles":68739,"route":"DXB-NBO","tier":"Gold","trips":2},"c58d206953b0eef6":{"city":"Doha","country":"Qatar","dest":"DOH","fn":"Tom","id":"d8cbc572-73c1-f111-a05a-7c1e52847c61","last":"2026-06-20","lastAmt":1619,"lastDep":"2026-06-20","lastRoute":"DXB-DOH","miles":80208,"route":"DXB-DOH","tier":"Gold","trips":5},"c5a8bb140bd12a33":{"city":"Abu Dhabi","country":"United Arab Emirates","dest":"AUH","fn":"Tom","id":"227bf245-5ac1-f111-a05a-7c1e52847c61","last":"2026-03-25","lastAmt":1102,"lastDep":"2026-12-10","lastRoute":"DXB-DMM","miles":61000,"route":"DXB-AUH","tier":"Silver","trips":2},"c70d8cab73209422":{"city":"Beirut","country":"Lebanon","dest":"BEY","fn":"Yousef","id":"9868d939-5ac1-f111-a05a-7c1e52847c61","last":"2025-06-25","lastAmt":2099,"lastDep":"2025-12-15","lastRoute":"DXB-ZNZ","miles":12000,"route":"DXB-BEY","tier":"Blue","trips":2},"caf26eee0c8c78db":{"city":"Istanbul","country":"Turkey","dest":"IST","fn":"Ethan","id":"ddb35260-73c1-f111-a05a-7c1e52847c61","last":"2026-08-19","lastAmt":6552,"lastDep":"2026-12-08","lastRoute":"DXB-NBO","miles":34370,"route":"DXB-IST","tier":"Gold","trips":3},"d7023b8aaea32745":{"city":"Madrid","country":"Spain","dest":"MAD","fn":"Pablo","id":"8985e826-6f08-f011-bae3-6045bd9ab721","last":"2026-08-13","lastAmt":5416,"lastDep":"2026-12-20","lastRoute":"DXB-MAD","miles":76000,"route":"DXB-MAD","tier":"Silver","trips":14},"dbd115f3e7fb5886":{"city":"Addis Ababa","country":"Ethiopia","dest":"ADD","fn":"Daniel","id":"d77af245-5ac1-f111-a05a-7c1e52847c61","last":"2025-07-19","lastAmt":1403,"lastDep":"2026-12-22","lastRoute":"DXB-BGW","miles":8800,"route":"DXB-ADD","tier":"Blue","trips":3},"e20e61cc49e6c8cf":{"city":"Belgrade","country":"Serbia","dest":"BEG","fn":"Lucas","id":"ffcbc572-73c1-f111-a05a-7c1e52847c61","last":"2026-06-28","lastAmt":2426,"lastDep":"2026-06-28","lastRoute":"DXB-BEG","miles":36700,"route":"DXB-BEG","tier":"Silver","trips":4},"e2aede03d7d7a365":{"city":"Abu Dhabi","country":"United Arab Emirates","dest":"AUH","fn":"Saeed","id":"c4c1c86c-73c1-f111-a05a-7c1e52847c61","last":"2026-10-03","lastAmt":1170,"lastDep":"2026-12-16","lastRoute":"DXB-AUH","miles":84728,"route":"DXB-AUH","tier":"Silver","trips":5},"e3530d5b2d87ccda":{"city":"Lahore","country":"Pakistan","dest":"LHE","fn":"Amara","id":"fdb35260-73c1-f111-a05a-7c1e52847c61","last":"2026-09-15","lastAmt":5405,"lastDep":"2026-09-15","lastRoute":"DXB-LHE","miles":26520,"route":"DXB-LHE","tier":"Silver","trips":6},"ebbaf8a460892c8d":{"city":"Male","country":"Maldives","dest":"MLE","fn":"Sarah","id":"c77af245-5ac1-f111-a05a-7c1e52847c61","last":"2026-10-04","lastAmt":989,"lastDep":"2026-10-04","lastRoute":"DXB-MCT","miles":15000,"route":"DXB-MLE","tier":"Blue","trips":4},"ee6141b55d42b225":{"city":"Tashkent","country":"Uzbekistan","dest":"TAS","fn":"Rajesh","id":"01e37566-73c1-f111-a05a-7c1e52847c61","last":"2026-09-01","lastAmt":3292,"lastDep":"2026-09-01","lastRoute":"DXB-TAS","miles":152802,"route":"DXB-TAS","tier":"Gold","trips":3},"f10247ccaf951553":{"city":"Riyadh","country":"Saudi Arabia","dest":"RUH","fn":"Ahmed","id":"bb68d939-5ac1-f111-a05a-7c1e52847c61","last":"2025-11-04","lastAmt":3425,"lastDep":"2027-01-03","lastRoute":"DXB-ESB","miles":58000,"route":"DXB-RUH","tier":"Silver","trips":2},"f552f63794c11a76":{"city":"Mumbai","country":"India","dest":"BOM","fn":"Michael","id":"cbc1c86c-73c1-f111-a05a-7c1e52847c61","last":"2026-06-24","lastAmt":2982,"lastDep":"2026-09-25","lastRoute":"DXB-ALA","miles":104220,"route":"DXB-BOM","tier":"Gold","trips":4},"fb7a47f7c1fda07d":{"city":"Tashkent","country":"Uzbekistan","dest":"TAS","fn":"Priya","id":"a5d3f73f-5ac1-f111-a05a-7c1e52847c61","last":"2025-03-12","lastAmt":9565,"lastDep":"2025-07-10","lastRoute":"DXB-RUH","miles":71000,"route":"DXB-TAS","tier":"Silver","trips":2},"fc4da6061494111c":{"city":"Muscat","country":"Oman","dest":"MCT","fn":"Layla","id":"ebb35260-73c1-f111-a05a-7c1e52847c61","last":"2026-04-26","lastAmt":2294,"lastDep":"2026-12-14","lastRoute":"DXB-MCT","miles":23685,"route":"DXB-MCT","tier":"Blue","trips":1}};
+
+function fetchProfile(contactId){
+  if(PROFILE_SOURCE==='api' && PROFILE_API){
+    return fetch(PROFILE_API+'?id='+encodeURIComponent(contactId),{mode:'cors'})
+      .then(function(r){ return r.ok?r.json():null; })
+      .catch(function(){ return null; });
+  }
+  for(var h in FDB_PROFILES){
+    if(FDB_PROFILES[h].id===contactId) return Promise.resolve(FDB_PROFILES[h]);
+  }
+  return Promise.resolve(null);
+}
+
+function readCookie(n){
+  var m=document.cookie.match('(^|;)\\s*'+n+'\\s*=\\s*([^;]+)');
+  return m?decodeURIComponent(m.pop()):null;
+}
+
+function destImage(iata){
+  return new Promise(function(res){
+    if(!iata) return res(null);
+    var url=DEST_IMG_BASE+iata+'.jpg', im=new Image();
+    im.onload=function(){ res(url); };
+    im.onerror=function(){ res(null); };   /* graceful: keep gradient hero */
+    im.src=url;
+  });
+}
+
+function fmtDate(d){
+  if(!d) return '';
+  var p=String(d).split('-'); if(p.length<3) return d;
+  var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return parseInt(p[2],10)+' '+M[parseInt(p[1],10)-1]+' '+p[0];
+}
+
+function applyPersonalization(p,source){
+  if(!p) return;
+  idState.identified=true;
+
+  /* --- welcome-back ribbon --- */
+  document.getElementById('wbAv').textContent=(p.fn||'?').charAt(0).toUpperCase();
+  document.getElementById('wbTxt').textContent='Welcome back, '+p.fn;
+  document.getElementById('wbTier').textContent=p.tier+' \u00b7 '+Number(p.miles||0).toLocaleString()+' miles';
+  setTimeout(function(){ document.getElementById('welcomeBack').classList.add('show'); },160);
+
+  /* --- hero copy + destination photo ---
+     precedence: unfinished search intent first, favourite route as fallback. --- */
+  var pending=null;
+  try{ pending=JSON.parse(localStorage.getItem('fdb_pending')||'null'); }catch(e){}
+  var heroDest = (pending && pending.destinationAirport) || p.dest;
+  var heroCity = (pending && pending.destCity) || p.city;
+
+  if(heroCity){
+    document.getElementById('heroH1').innerHTML=
+      'Back to <span>'+heroCity+'</span>?';
+    document.getElementById('heroSub').textContent=
+      (pending && pending.destinationAirport)
+        ? 'You were looking at '+(pending.originAirport||'DXB')+' \u2192 '+pending.destinationAirport+'. Pick up where you left off.'
+        : 'Your most-flown route \u2014 '+p.trips+' trips, last flown '+fmtDate(p.last)+'.';
+  }
+  destImage(heroDest).then(function(url){
+    if(!url) return;
+    document.getElementById('heroPhoto').style.backgroundImage='url("'+url+'")';
+    document.getElementById('hero').classList.add('personalised');
+  });
+
+  /* --- resume-booking widget --- */
+  var rt=null;
+  if(pending && pending.destinationAirport){
+    rt={o:pending.originAirport||'DXB',d:pending.destinationAirport,
+        title:'Continue your '+(pending.originAirport||'DXB')+' \u2192 '+pending.destinationAirport+' booking',
+        sub:'You left this search '+timeAgo(pending.ts)+
+            (pending.lowestFareAED?(' \u00b7 fares from AED '+Number(pending.lowestFareAED).toLocaleString()):'')};
+  }else if(p.route){
+    var pr=p.route.split('-');
+    rt={o:pr[0],d:pr[1],
+        title:'Book '+p.route.replace('-',' \u2192 ')+' again',
+        sub:'Your most-flown route \u00b7 '+p.trips+' trips \u00b7 last flown '+fmtDate(p.last)};
+  }
+  if(rt){
+    document.getElementById('resumeTitle').textContent=rt.title;
+    document.getElementById('resumeSub').textContent=rt.sub;
+    document.getElementById('resumeCard').classList.add('show');
+    document.getElementById('resumeGo').onclick=function(){
+      var os=document.getElementById('origin'), ds=document.getElementById('dest');
+      if(hasOption(os,rt.o)) os.value=rt.o;
+      if(hasOption(ds,rt.d)) ds.value=rt.d;
+      track('ResumeBookingClick','hero',{originAirport:rt.o,destinationAirport:rt.d,source:source});
+      document.getElementById('resumeCard').classList.remove('show');
+      doSearch(null);
+      var sc=document.querySelector('.searchcard');
+      if(sc) sc.scrollIntoView({behavior:'smooth',block:'center'});
+    };
+    document.getElementById('resumeX').onclick=function(){
+      document.getElementById('resumeCard').classList.remove('show');
+      track('ResumeBookingDismiss','hero',{});
+    };
+  }
+
+  track('PersonalizedHeroShown','hero',{
+    recognisedAs:p.fn,skywardsTier:p.tier,heroDestination:heroDest||'',
+    source:source,viaPendingSearch:!!(pending&&pending.destinationAirport)});
+  console.log('[CIJ] personalised for',p.fn,'('+source+') hero='+heroDest);
+}
+
+function hasOption(sel,v){
+  if(!sel) return false;
+  for(var i=0;i<sel.options.length;i++) if(sel.options[i].value===v) return true;
+  return false;
+}
+
+function timeAgo(ts){
+  if(!ts) return 'recently';
+  var m=Math.floor((Date.now()-ts)/60000);
+  if(m<2) return 'just now';
+  if(m<60) return m+' minutes ago';
+  var h=Math.floor(m/60); if(h<24) return h+' hour'+(h>1?'s':'')+' ago';
+  var d=Math.floor(h/24); return d+' day'+(d>1?'s':'')+' ago';
+}
+
+function forgetMe(){
+  try{
+    localStorage.removeItem('fdb_pending');
+    ['msdynci_userauthid','_msci','msdynci_trackingContext'].forEach(function(c){
+      document.cookie=c+'=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+    });
+  }catch(e){}
+  track('IdentityReset','hero',{});
+  location.reload();
+}
+
+/* boot: if setUser ran on a previous visit, the SDK left a 365-day cookie. */
+function bootPersonalization(){
+  var el=document.getElementById('wbNot');
+  if(el) el.addEventListener('click',forgetMe);
+  var cid=readCookie(AUTH_COOKIE);
+  if(!cid) return;
+  fetchProfile(cid).then(function(p){
+    if(p) applyPersonalization(p,'returning_cookie');
+    else console.log('[CIJ] authId cookie present but no profile:',cid);
+  });
+}
+
 /* ================= identification: email -> contactid -> MSCI.setUser =================
    CI-Data "Web tracking & personalization" is bound to table CRM_Passengers whose
    primary key is contactid. setUser({authId}) must therefore receive that GUID.
@@ -902,7 +1114,12 @@ function hideIdModal(){ document.getElementById('idModal').classList.remove('sho
         '<div class="modal-ok"><div class="ok-ic">&#10003;</div>'+
         '<h4>'+(rec?('Good to see you again, '+name+'!'):'You\'re all set')+'</h4>'+
         '<p>'+line2+'</p></div>';
-      setTimeout(hideIdModal,2600);
+      setTimeout(function(){
+        hideIdModal();
+        if(rec) fetchProfile(rec[0]).then(function(pf){
+          if(pf) applyPersonalization(pf,'just_identified');
+        });
+      },2600);
       toast(rec?('Identified as '+name+' \u00b7 '+rec[2]+' member'):'Fare alert created');
     });
   });
@@ -941,6 +1158,12 @@ function fireAbandon(reason){
             'Flight search abandoned — '+payload.originAirport+' to '+payload.destinationAirport,
             'results', payload);
   track('FlightSearchAbandoned','results',payload);
+  try{
+    localStorage.setItem('fdb_pending',JSON.stringify({
+      originAirport:payload.originAirport,destinationAirport:payload.destinationAirport,
+      destCity:(FDB_CITY[payload.destinationAirport]||''),departureDate:payload.departureDate,
+      cabinClass:payload.cabinClass,lowestFareAED:payload.lowestFareAED,ts:Date.now()}));
+  }catch(e){}
   console.log('[CIJ] FlightSearchAbandoned fired:', reason);
   /* visible re-engagement: only for reasons where the user can still see
      the page. tab_hidden / page_unload cannot render anything useful. */
@@ -959,6 +1182,7 @@ setTimeout(function(){ fireAbandon('idle_90s'); },90000);
 
 /* fire an explicit page view on load */
 window.addEventListener('load',function(){
+  try{ bootPersonalization(); }catch(e){ console.warn('[CIJ] personalization boot failed',e); }
   try{
     if(window.MSCI && typeof window.MSCI.trackView==='function'){
       window.MSCI.trackView({ name:'flydubai Demo — Home', uri:location.href });
