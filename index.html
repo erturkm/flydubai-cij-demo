@@ -35,6 +35,53 @@
     </script>
 <!-- ===== end web tracking ===== -->
 
+<!-- ===== Customer Insights – JOURNEYS web tracking (second, independent pipeline) =====
+     CI-Data (above) and CI-J ingest through DIFFERENT endpoints:
+       CI-Data -> public-eur.mkt.dynamics.com/.../notifierpublic/webtracking/events
+       CI-J    -> mobile.events.data.microsoft.com/OneCollector/1.0/
+     Only signals that reach the OneCollector endpoint can drive a CIJ
+     "Marketing Website Visited" trigger, which is why the journey never fired
+     while the site posted to CI-Data alone.
+
+     The stock CIJ snippet also declares the global `MSCI`, so pasting it
+     verbatim would overwrite the CI-Data instance. Instead we reuse the SDK
+     class already loaded above (window.MSCI.constructor) and stand up a
+     SECOND instance under its own global. The CI-Data block is untouched. -->
+<script>
+(function(){
+  var CIJ_CFG = {
+    ingestionKey: "84dd52ef50e3424093161b13ea9ac764-67531bf7-1f1a-49b6-afee-e7f496cce4b4-7021",
+    endpointUrl:  "https://mobile.events.data.microsoft.com/OneCollector/1.0/",
+    autoCapture:  { view: true, click: true },
+    orgInfo: {
+      orgId:       "2e20ea40-bb60-f011-8ee3-000d3aa9bf7e",
+      orgTenantId: "5160aab0-e6f5-4c4a-b800-6d5280cd34e5",
+      orgGeo:      "EUR"
+    }
+  };
+  /* The CI-Data snippet loads the bundle asynchronously, so window.MSCI is a
+     stub until it lands. Poll briefly for the real instance, then clone it. */
+  var tries = 0;
+  (function boot(){
+    tries++;
+    try{
+      var base = window.MSCI;
+      if (base && base.constructor && typeof base.trackView === 'function'){
+        var Klass = base.constructor;
+        var cij = new Klass();
+        cij.initialize(CIJ_CFG);
+        window.MSCIJ = cij;
+        console.log('[CIJ] journeys tracking instance ready (OneCollector)');
+        return;
+      }
+    }catch(e){ console.warn('[CIJ] journeys instance failed', e); return; }
+    if (tries < 60) setTimeout(boot, 250);
+    else console.warn('[CIJ] journeys instance gave up waiting for SDK');
+  })();
+})();
+</script>
+<!-- ===== end journeys web tracking ===== -->
+
 <style>
 :root{
   --navy:#002B5C;
@@ -811,36 +858,32 @@ function cijProps(where, extra){
   return props;
 }
 
-/* Fires an ACTION signal. Custom fields survive in properties. */
+/* Fires an ACTION signal. Custom fields survive in properties.
+   Mirrored to BOTH pipelines: CI-Data (window.MSCI) and CI-J (window.MSCIJ). */
 function track(name, where, extra){
   var props = cijProps(where, extra);
-  try{
-    if (window.MSCI && typeof window.MSCI.trackAction === 'function'){
-      window.MSCI.trackAction({
-        type: 'other',
-        name: name,
-        elementId: name,
-        properties: props
-      });
-    }
-    console.log('[CIJ action]', name, props);
-  }catch(e){ console.warn('trackAction failed', name, e); }
+  var payload = { type:'other', name:name, elementId:name, properties:props };
+  [window.MSCI, window.MSCIJ].forEach(function(sdk){
+    try{
+      if (sdk && typeof sdk.trackAction === 'function') sdk.trackAction(payload);
+    }catch(e){ console.warn('trackAction failed', name, e); }
+  });
+  console.log('[CIJ action]', name, props);
 }
 
 /* Fires a VIEW signal against an explicit URL. Any query-string keys
    listed in queryStringAttributes (see the config block in <head>)
-   are lifted onto the signal automatically. */
+   are lifted onto the signal automatically.
+   Mirrored to BOTH pipelines - the CI-J copy is the one a
+   "Marketing Website Visited" journey trigger can actually act on. */
 function trackPage(uri, title, where, extra){
-  try{
-    if (window.MSCI && typeof window.MSCI.trackView === 'function'){
-      window.MSCI.trackView({
-        uri: uri,
-        name: title,
-        properties: cijProps(where, extra)
-      });
-    }
-    console.log('[CIJ view]', uri, title);
-  }catch(e){ console.warn('trackView failed', uri, e); }
+  var payload = { uri:uri, name:title, properties:cijProps(where, extra) };
+  [window.MSCI, window.MSCIJ].forEach(function(sdk){
+    try{
+      if (sdk && typeof sdk.trackView === 'function') sdk.trackView(payload);
+    }catch(e){ console.warn('trackView failed', uri, e); }
+  });
+  console.log('[CIJ view]', uri, title);
 }
 
 /* ---------- toast ---------- */
@@ -1588,15 +1631,18 @@ function idHash(email){
 }
 
 function identify(authId,who){
-  try{
-    if(window.MSCI && typeof window.MSCI.setUser==='function'){
-      window.MSCI.setUser({ authId: authId });
-      idState.identified=true;
-      console.log('[CIJ] MSCI.setUser authId=',authId,who?('('+who+')'):'');
-      return true;
-    }
-    console.warn('[CIJ] MSCI.setUser unavailable');
-  }catch(err){ console.warn('[CIJ] setUser failed',err); }
+  var ok=false;
+  [['MSCI',window.MSCI],['MSCIJ',window.MSCIJ]].forEach(function(p){
+    try{
+      if(p[1] && typeof p[1].setUser==='function'){
+        p[1].setUser({ authId: authId });
+        ok=true;
+        console.log('[CIJ] '+p[0]+'.setUser authId=',authId,who?('('+who+')'):'');
+      }
+    }catch(err){ console.warn('[CIJ] '+p[0]+'.setUser failed',err); }
+  });
+  if(ok){ idState.identified=true; return true; }
+  console.warn('[CIJ] setUser unavailable on both pipelines');
   return false;
 }
 
