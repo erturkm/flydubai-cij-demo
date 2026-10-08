@@ -59,22 +59,27 @@
       orgGeo:      "EUR"
     }
   };
-  /* The CI-Data snippet loads the bundle asynchronously, so window.MSCI is a
-     stub until it lands. Poll briefly for the real instance, then clone it. */
+  /* The CI-Data snippet installs a lightweight STUB on window.MSCI that only
+     queues calls until the real bundle arrives. The stub exposes trackView,
+     so testing for that alone matches too early and cloning its constructor
+     throws. Wait for a hallmark of the real instance ('_isInitialized') and
+     keep retrying on failure rather than giving up on the first miss. */
   var tries = 0;
   (function boot(){
     tries++;
     try{
       var base = window.MSCI;
-      if (base && base.constructor && typeof base.trackView === 'function'){
-        var Klass = base.constructor;
-        var cij = new Klass();
+      if (base && typeof base === 'object' && ('_isInitialized' in base) &&
+          base.constructor && typeof base.trackView === 'function'){
+        var cij = new (base.constructor)();
         cij.initialize(CIJ_CFG);
         window.MSCIJ = cij;
         console.log('[CIJ] journeys tracking instance ready (OneCollector)');
         return;
       }
-    }catch(e){ console.warn('[CIJ] journeys instance failed', e); return; }
+    }catch(e){
+      if (tries >= 60){ console.warn('[CIJ] journeys instance failed', e); return; }
+    }
     if (tries < 60) setTimeout(boot, 250);
     else console.warn('[CIJ] journeys instance gave up waiting for SDK');
   })();
