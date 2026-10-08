@@ -1653,10 +1653,19 @@ function idHash(email){
 
 function identify(authId,who){
   var ok=false;
+  /* The SDK's setUser does `this._user = payload` - a FULL replacement, not a
+     merge. Passing only authId therefore wipes trackingContext (and
+     formSubmissionId), and a view with no trackingContext can never drive a
+     CI-Journeys trigger. So re-read them from their cookies and pass them back. */
+  var ctx=readCookie('msdynci_trackingContext');
+  var fsid=readCookie('msdynmkt_formsubmissionid');
   [['MSCI',window.MSCI],['MSCIJ',window.MSCIJ]].forEach(function(p){
     try{
       if(p[1] && typeof p[1].setUser==='function'){
-        p[1].setUser({ authId: authId });
+        var payload={ authId: authId };
+        if(ctx)  payload.trackingContext=ctx;
+        if(fsid) payload.formSubmissionId=fsid;
+        p[1].setUser(payload);
         ok=true;
         console.log('[CIJ] '+p[0]+'.setUser authId=',authId,who?('('+who+')'):'');
       }
