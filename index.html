@@ -22,6 +22,7 @@
     if(u.searchParams.has('stage')){
       u.searchParams.delete('stage');
       u.searchParams.delete('step');
+      u.searchParams.delete('phase');
       history.replaceState(null,'',u.pathname+u.search+u.hash);
     }
   }catch(e){}
@@ -1838,7 +1839,7 @@ function hideIdModal(){ document.getElementById('idModal').classList.remove('sho
           trackPage(location.origin+location.pathname+
             '?from='+encodeURIComponent(org)+'&to='+encodeURIComponent(dst)+
             '&depart='+encodeURIComponent(dep)+'&cabin='+encodeURIComponent(cab)+
-            '&stage='+(inFunnel?'booking_abandoned':'abandoned')+
+            '&stage=abandoned'+(inFunnel?'&phase=booking':'')+
             (inFunnel?('&step='+o2.step):'')+'&identified=1',
             fdbRouteLine(org, dst, o2.lowestFareAED),
             inFunnel?'booking':'results',
@@ -1902,7 +1903,7 @@ function fireBookingAbandon(reason){
     trackPage(location.origin+location.pathname+
       '?from='+encodeURIComponent(state.origin)+'&to='+encodeURIComponent(state.dest)+
       '&depart='+encodeURIComponent(state.dep)+'&cabin='+encodeURIComponent(bk.cabin)+
-      '&stage=booking_abandoned&step='+st.k,
+      '&stage=abandoned&phase=booking&step='+st.k,
       fdbRouteLine(state.origin, state.dest, payload.lowestFareAED),
       'booking', payload,
       fdbDestCity(state.dest));
