@@ -881,8 +881,13 @@ function track(name, where, extra){
    are lifted onto the signal automatically.
    Mirrored to BOTH pipelines - the CI-J copy is the one a
    "Marketing Website Visited" journey trigger can actually act on. */
-function trackPage(uri, title, where, extra){
+/* viewTitle lands in msdynci_viewtitle, which a CIJ journey can bind as an
+   email placeholder. The SDK only lets the caller set uri, name and title -
+   view_type is hardcoded "page" and view_previousviews is internal SDK state -
+   so those three are the only slots available to carry data into an email. */
+function trackPage(uri, title, where, extra, viewTitle){
   var payload = { uri:uri, name:title, properties:cijProps(where, extra) };
+  if (viewTitle) payload.title = viewTitle;
   [window.MSCI, window.MSCIJ].forEach(function(sdk){
     try{
       if (sdk && typeof sdk.trackView === 'function') sdk.trackView(payload);
@@ -1460,8 +1465,19 @@ function completeBooking(){
    so personalization content must come from one of the two sources above.
 ==================================================================================== */
 var FDB_CITY={"ADD":"Addis Ababa","ALA":"Almaty","ALY":"Alexandria","AMM":"Amman","AUH":"Abu Dhabi","AYT":"Antalya","BAH":"Bahrain","BEG":"Belgrade","BEY":"Beirut","BGW":"Baghdad","BKK":"Bangkok","BOM":"Mumbai","BSR":"Basra","BTS":"Bratislava","CAI":"Cairo","CMB":"Colombo","COK":"Kochi","CTA":"Catania","DAC":"Dhaka","DEL":"Delhi","DMM":"Dammam","DOH":"Doha","DXB":"Dubai","EBL":"Erbil","ESB":"Ankara","EVN":"Yerevan","GYD":"Baku","HEL":"Helsinki","HGA":"Hargeisa","HYD":"Hyderabad","ISB":"Islamabad","IST":"Istanbul","JED":"Jeddah","JIB":"Djibouti","KBV":"Krabi","KHI":"Karachi","KRK":"Krakow","KTM":"Kathmandu","KWI":"Kuwait City","LGW":"London","LHE":"Lahore","MAA":"Chennai","MAD":"Madrid","MCT":"Muscat","MLE":"Male","NAP":"Naples","NBO":"Nairobi","PRG":"Prague","RUH":"Riyadh","SAW":"Istanbul Sabiha","SHJ":"Sharjah","SLL":"Salalah","SOF":"Sofia","TAS":"Tashkent","TBS":"Tbilisi","ZAG":"Zagreb","ZNZ":"Zanzibar"};
-var PROFILE_SOURCE='local';
-var PROFILE_API='';            /* e.g. https://<func>.azurewebsites.net/api/profile */
+/* Human-readable strings carried on the abandon VIEW so the recovery email
+   can be route-accurate. fdbDestCity -> msdynci_viewtitle, fdbRouteLine ->
+   msdynci_viewname. Keep them free of '%' - the SDK runs name through
+   decodeURI, which throws on a stray percent sign. */
+function fdbDestCity(dst){ return FDB_CITY[dst] || dst; }
+function fdbRouteLine(org, dst, fare){
+  var line = (FDB_CITY[org]||org)+' ('+org+') to '+(FDB_CITY[dst]||dst)+' ('+dst+')';
+  var n = Number(fare);
+  if (n > 0) line += ' from AED '+n.toLocaleString('en-US');
+  return line;
+}
+
+var PROFILE_SOURCE='local';var PROFILE_API='';            /* e.g. https://<func>.azurewebsites.net/api/profile */
 var DEST_IMG_BASE='img/dest/';
 var AUTH_COOKIE='msdynci_userauthid';
 
@@ -1796,14 +1812,14 @@ function hideIdModal(){ document.getElementById('idModal').classList.remove('sho
             '&depart='+encodeURIComponent(dep)+'&cabin='+encodeURIComponent(cab)+
             '&stage='+(inFunnel?'booking_abandoned':'abandoned')+
             (inFunnel?('&step='+o2.step):'')+'&identified=1',
-            (inFunnel?('Booking abandoned at '+(o2.stepLabel||o2.step)+' \u2014 '):
-                      'Flight search abandoned \u2014 ')+org+' to '+dst,
+            fdbRouteLine(org, dst, o2.lowestFareAED),
             inFunnel?'booking':'results',
             Object.keys(props).reduce(function(a,k){a[k]=props[k];return a;},
               {identifiedAfterAbandon:true,
                seatSelected:o2.seatSelected||'',
                extrasCount:o2.extrasCount||0,
-               step:o2.step||'',stepLabel:o2.stepLabel||''}));
+               step:o2.step||'',stepLabel:o2.stepLabel||''}),
+            fdbDestCity(dst));
           console.log('[CIJ] re-emitted identified abandon view for',authId);
         },400);
       }
@@ -1859,8 +1875,9 @@ function fireBookingAbandon(reason){
       '?from='+encodeURIComponent(state.origin)+'&to='+encodeURIComponent(state.dest)+
       '&depart='+encodeURIComponent(state.dep)+'&cabin='+encodeURIComponent(bk.cabin)+
       '&stage=booking_abandoned&step='+st.k,
-      'Booking abandoned at '+st.label+' \u2014 '+state.origin+' to '+state.dest,
-      'booking', payload);
+      fdbRouteLine(state.origin, state.dest, payload.lowestFareAED),
+      'booking', payload,
+      fdbDestCity(state.dest));
     track('BookingAbandoned','booking',payload);
     try{
       localStorage.setItem('fdb_pending',JSON.stringify({
@@ -1903,8 +1920,9 @@ function fireAbandon(reason){
          '&cabin='+encodeURIComponent(payload.cabinClass)+
          '&stage=abandoned';
   trackPage(location.origin+location.pathname+'?'+qs,
-            'Flight search abandoned — '+payload.originAirport+' to '+payload.destinationAirport,
-            'results', payload);
+            fdbRouteLine(payload.originAirport, payload.destinationAirport, payload.lowestFareAED),
+            'results', payload,
+            fdbDestCity(payload.destinationAirport));
   track('FlightSearchAbandoned','results',payload);
   try{
     localStorage.setItem('fdb_pending',JSON.stringify({
