@@ -9,6 +9,25 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
+<!-- ===== Loop breaker =====
+     The recovery email's CTA resolves to msdynci_viewuri, which carries the
+     stage= marker the journey trigger matches on. Any click - including an
+     automated mail-security scan - would therefore re-fire the trigger and
+     send another email, forever. Strip stage= before any tracking script
+     boots so a resumed visit looks like an ordinary page view. -->
+<script>
+(function(){
+  try{
+    var u=new URL(window.location.href);
+    if(u.searchParams.has('stage')){
+      u.searchParams.delete('stage');
+      u.searchParams.delete('step');
+      history.replaceState(null,'',u.pathname+u.search+u.hash);
+    }
+  }catch(e){}
+})();
+</script>
+
 <!-- ===== Dynamics 365 Customer Insights – Journeys web tracking ===== -->
 <script>
         (function (a, t, i) { var e = "MSCI"; var s = "Analytics"; var o = e + "queue"; a[o] = a[o] || []; var r = a[e] || function (n) { var t = {}; t[s] = {}; function e(e) { while (e.length) { var r = e.pop(); t[s][r] = function (e) { return function () { a[o].push([e, n, arguments]) } }(r) } } var r = "track"; var i = "set"; e([r + "Event", r + "View", r + "Action", i + "Config", i + "Property", i + "User", "initialize", "teardown"]); return t }(i.name); var n = i.name; if (!a[e]) { a[n] = r[s]; a[o].push(["new", n]); setTimeout(function () { var e = "script"; var r = t.createElement(e); r.async = 1; r.src = i.src; var n = t.getElementsByTagName(e)[0]; n.parentNode.insertBefore(r, n) }, 1) } else { a[n] = new r[s] } if (i.user) { a[n].setUser(i.user) } if (i.props) { for (var c in i.props) { a[n].setProperty(c, i.props[c]) } } a[n].initialize(i.cfg) })(window, document, {
